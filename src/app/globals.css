@@ -630,3 +630,7 @@
 .signin-benefits { margin-top: auto; padding-top: 42px; }
 .signin-message .signin-headline-sub { font-size: clamp(19px, 2.1vw, 31px); }
 @media (max-width: 420px) { .signin-message .signin-headline-sub { font-size: clamp(15px, 4.6vw, 19px); } }
+.signin-brand small { transform: translateX(20px); }
+
+.signin-message .signin-headline-main span { color: #08b7e8; }
+.signin-message > p { margin-top: 16px; }
