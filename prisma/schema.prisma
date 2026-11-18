@@ -1,6 +1,7 @@
 // Prisma schema for BOS1 (single-tenant). One database per deployment; there is no
 // tenant scoping. Access is gated by the User allowlist (see model User) and
-// Clerk sign-in.
+// Clerk sign-in. Single-tenant deployment, one DB per deployment, so RLS does not
+// apply (see CLAUDE.md "Deviations from global laws").
 
 generator client {
   provider = "prisma-client"
@@ -93,13 +94,14 @@ enum NotificationType {
 }
 
 model User {
-  id          String   @id @default(cuid())
-  email       String   @unique // lowercased; allowlist key
-  clerkUserId String?  @unique // null until first verified sign-in
-  name        String?
-  role        UserRole @default(MEMBER)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id            String    @id @default(cuid())
+  email         String    @unique // lowercased; allowlist key
+  clerkUserId   String?   @unique // null until first verified sign-in
+  name          String?
+  role          UserRole  @default(MEMBER)
+  deactivatedAt DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
   @@map("users")
 }

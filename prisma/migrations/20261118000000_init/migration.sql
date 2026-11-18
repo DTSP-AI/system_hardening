@@ -44,10 +44,12 @@ CREATE TABLE "users" (
     "clerkUserId" TEXT,
     "name" TEXT,
     "role" "UserRole" NOT NULL DEFAULT 'MEMBER',
+    "deactivatedAt" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
-    CONSTRAINT "users_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "users_pkey" PRIMARY KEY ("id"),
+    CONSTRAINT "users_email_lower" CHECK ("email" = lower("email"))
 );
 
 -- CreateTable
