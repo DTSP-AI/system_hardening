@@ -1,0 +1,423 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: -apple-system, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "Cascadia Code", "JetBrains Mono", Menlo, monospace;
+  --font-heading: -apple-system, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
+  --font-brand: var(--font-nasalization);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-glow: var(--glow);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+/*
+  YBRYX raw brand tokens (source of truth, from the ybryx-brand skill).
+  Do not consume these directly in components -- use the semantic layer below,
+  which is tuned for a dark command-center UI rather than the marketing 70/20/10 ratio.
+*/
+:root {
+  --navy: #0a1f3d;
+  --navy-2: #0f2a52;
+  --ink: #0b1220;
+  --blue: #2563eb;
+  --light-blue: #93c5fd;
+  --glow: #38bdf8;
+  --grey: #64748b;
+  --grey-2: #94a3b8;
+  --paper: #ffffff;
+  --paper-2: #f8fafc;
+
+  /* Vivid categorical chart set -- validated CVD-safe (all 6 checks pass)
+     via dataviz skill's validate_palette.js against --ink surface #0b1220. */
+  --viz-blue: #3987e5;
+  --viz-aqua: #199e70;
+  --viz-yellow: #c98500;
+  --viz-violet: #9085e9;
+  --viz-orange: #d95926;
+}
+
+/*
+  Semantic app theme -- "Flight Deck": matte command-deck panels (no blur, no
+  photo backdrop, no glassmorphism), a rationed glow-cyan accent reserved for
+  live/active state, and mono tabular numerals on every stat/timestamp/value
+  (see .mono-num below). :root is the light variant, .dark the dark variant --
+  toggled at runtime via next-themes (src/components/shell/theme-toggle.tsx).
+  --sidebar-* and --status-bar-* tokens stay pinned to the dark palette in BOTH variants
+  ("the rail is a dark cockpit frame around the workspace, in either theme")
+  -- this mirrors the pre-existing .status-bar override further down this
+  file, which was already hardcoded navy "regardless of the active
+  data-theme" before Flight Deck existed. Components consume
+  --background/--foreground/etc, never the raw brand tokens above. The prior
+  "Arctic Custom" look (ice-blue shell, photo backdrop, black glass cards) and
+  the "Signal" command-center look are both preserved as selectable options
+  under [data-theme="arctic-custom"] / [data-theme="signal"] near the bottom
+  of this file.
+*/
+:root {
+  --background: #edf2f9;
+  --foreground: #16233a;
+  --card: #ffffff;
+  --card-foreground: #16233a;
+  --popover: #ffffff;
+  --popover-foreground: #16233a;
+  --primary: #0284c7;
+  --primary-foreground: #ffffff;
+  --secondary: #e2eaf6;
+  --secondary-foreground: #0284c7;
+  --muted: #e5ecf7;
+  --muted-foreground: #52678a;
+  --accent: rgba(2, 132, 199, 0.1);
+  --accent-foreground: #0284c7;
+  --destructive: #dc2626;
+  --border: rgba(22, 47, 90, 0.12);
+  --input: rgba(22, 47, 90, 0.12);
+  --ring: #0284c7;
+  --chart-1: var(--viz-blue);
+  --chart-2: var(--viz-aqua);
+  --chart-3: var(--viz-yellow);
+  --chart-4: var(--viz-violet);
+  --chart-5: var(--viz-orange);
+  --radius: 0.5rem;
+  --good: #059669;
+  --warn: #b45309;
+  --sidebar: #0c1424;
+  --sidebar-foreground: #e8eef8;
+  --sidebar-primary: #38bdf8;
+  --sidebar-primary-foreground: #04121f;
+  --sidebar-accent: rgba(56, 189, 248, 0.14);
+  --sidebar-accent-foreground: #38bdf8;
+  --sidebar-border: rgba(147, 178, 230, 0.14);
+  --sidebar-ring: #38bdf8;
+}
+
+.dark {
+  --background: #0a0f1c;
+  --foreground: #e8eef8;
+  --card: #0e1626;
+  --card-foreground: #e8eef8;
+  --popover: #15203a;
+  --popover-foreground: #e8eef8;
+  --primary: #38bdf8;
+  --primary-foreground: #04121f;
+  --secondary: rgba(147, 178, 230, 0.1);
+  --secondary-foreground: #e8eef8;
+  --muted: rgba(147, 178, 230, 0.08);
+  --muted-foreground: #8ba0c0;
+  --accent: rgba(56, 189, 248, 0.14);
+  --accent-foreground: #38bdf8;
+  --destructive: #f87171;
+  --border: rgba(147, 178, 230, 0.14);
+  --input: rgba(147, 178, 230, 0.14);
+  --ring: #38bdf8;
+  --chart-1: var(--viz-blue);
+  --chart-2: var(--viz-aqua);
+  --chart-3: var(--viz-yellow);
+  --chart-4: var(--viz-violet);
+  --chart-5: var(--viz-orange);
+  --radius: 0.5rem;
+  --good: #34d399;
+  --warn: #fbbf24;
+  --sidebar: #0c1424;
+  --sidebar-foreground: #e8eef8;
+  --sidebar-primary: #38bdf8;
+  --sidebar-primary-foreground: #04121f;
+  --sidebar-accent: rgba(56, 189, 248, 0.14);
+  --sidebar-accent-foreground: #38bdf8;
+  --sidebar-border: rgba(147, 178, 230, 0.14);
+  --sidebar-ring: #38bdf8;
+}
+
+/* Mono tabular numerals -- money, timestamps, durations, counts. */
+.mono-num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+  }
+}
+
+/*
+  Backdrop layer behind the app shell -- flat background color for the default
+  theme (no photo/scrim, kept minimal per the Google-style direction). The
+  legacy Arctic Custom photo-backdrop treatment lives under
+  [data-theme="arctic-custom"] below.
+*/
+.app-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background-color: var(--background);
+}
+
+.glass {
+  backdrop-filter: blur(28px) saturate(130%);
+  -webkit-backdrop-filter: blur(28px) saturate(130%);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+/*
+  Status bar -- dark navy shell with a cyan brand accent and white text,
+  deliberately fixed regardless of the active data-theme (not driven by the
+  semantic tokens, so it reads the same across every theme variant).
+*/
+.status-bar {
+  background: var(--navy);
+  color: #ffffff;
+}
+
+.status-bar .text-foreground {
+  color: #ffffff;
+}
+
+.status-bar .text-muted-foreground {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.status-bar .text-accent {
+  color: var(--glow);
+}
+
+/*
+  "Signal" theme -- dark command-deck shell over the real YBRYX LP hero photo,
+  animated circuit-trace light nodes, deep-navy glass cards. Preserved as a
+  selectable option (not currently applied anywhere, including the YBRYX
+  COMMAND tenant, which now uses the default theme above like every other
+  tenant) -- apply via data-theme="signal" on the app shell root to bring it
+  back. .signal-veins below is this theme's decorative companion.
+*/
+[data-theme="signal"] {
+  --background: var(--ink);
+  --foreground: #e6edf7;
+  --card: rgba(5, 12, 28, 0.86);
+  --card-foreground: #f1f5f9;
+  --popover: #0b1220;
+  --popover-foreground: #e6edf7;
+  --primary: var(--blue);
+  --primary-foreground: #ffffff;
+  --secondary: rgba(37, 99, 235, 0.14);
+  --secondary-foreground: #dbeafe;
+  --muted: rgba(148, 163, 184, 0.12);
+  --muted-foreground: #93a5c2;
+  --accent: rgba(56, 189, 248, 0.16);
+  --accent-foreground: var(--glow);
+  --border: rgba(147, 197, 253, 0.18);
+  --input: rgba(147, 197, 253, 0.18);
+  --ring: var(--glow);
+  --sidebar: #ffffff;
+  --sidebar-foreground: var(--navy);
+  --sidebar-primary: #2563eb;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #eff6ff;
+  --sidebar-accent-foreground: #2563eb;
+  --sidebar-border: #e5e7eb;
+  --sidebar-ring: #2563eb;
+}
+
+[data-theme="signal"] .app-backdrop {
+  background-image:
+    linear-gradient(
+      160deg,
+      rgba(10, 31, 61, 0.45) 0%,
+      rgba(11, 18, 32, 0.62) 55%,
+      rgba(11, 18, 32, 0.85) 100%
+    ),
+    url("/backgrounds/signal-hero.webp");
+}
+
+[data-theme="signal"] .status-bar {
+  background: rgba(6, 12, 28, 0.99);
+}
+
+[data-theme="signal"] [data-slot="card"] {
+  background: rgba(6, 12, 28, 0.99);
+  border: 1px solid rgba(147, 197, 253, 0.16);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow:
+    0 1px 2px rgba(2, 6, 16, 0.5),
+    0 12px 28px -10px rgba(2, 6, 16, 0.55),
+    0 28px 56px -24px rgba(2, 6, 16, 0.6);
+}
+
+[data-theme="signal"] [data-slot="card"] .text-muted-foreground {
+  color: rgba(230, 237, 247, 0.62);
+}
+
+[data-theme="signal"] [data-slot="card"] .border-border {
+  border-color: rgba(147, 197, 253, 0.16);
+}
+
+[data-theme="signal"] [data-slot="textarea"] {
+  background-color: rgba(6, 14, 32, 0.9);
+  color: #e6edf7;
+  border-color: rgba(147, 197, 253, 0.2);
+}
+
+[data-theme="signal"] [data-slot="card-footer"] {
+  background: rgba(147, 197, 253, 0.05);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+[data-theme="signal"] .activity-composer-submit {
+  background-color: var(--blue);
+  border-color: var(--blue);
+  color: #ffffff;
+}
+
+[data-theme="signal"] .activity-composer-submit:hover {
+  background-color: #1d4ed8;
+}
+
+/* Animated circuit-trace light nodes travelling through the Signal backdrop photo. */
+.signal-veins {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .signal-veins {
+    display: none;
+  }
+}
+
+/*
+  "Arctic Custom" -- the prior default theme, preserved as a selectable option
+  for future use (not currently applied by any tenant/route). Ice-blue shell,
+  photo backdrop, translucent black glass cards. Mirrors the
+  [data-theme="signal"] pattern above: apply via data-theme="arctic-custom" on
+  the app shell root to bring it back.
+*/
+[data-theme="arctic-custom"] {
+  --background: #eaf5fb;
+  --foreground: #111827;
+  --card: #000000;
+  --card-foreground: #f8fafc;
+  --popover: #ffffff;
+  --popover-foreground: #111827;
+  --primary: #2563eb;
+  --primary-foreground: #ffffff;
+  --secondary: #dcedf7;
+  --secondary-foreground: #111827;
+  --muted: #dcedf7;
+  --muted-foreground: #5b7186;
+  --accent: #dbeafe;
+  --accent-foreground: #2563eb;
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: #d3e6f2;
+  --input: #d3e6f2;
+  --ring: #2563eb;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #374151;
+  --sidebar-primary: #2563eb;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #eff6ff;
+  --sidebar-accent-foreground: #2563eb;
+  --sidebar-border: #e5e7eb;
+  --sidebar-ring: #2563eb;
+}
+
+[data-theme="arctic-custom"] .app-backdrop {
+  background-image:
+    linear-gradient(rgba(10, 26, 51, 0.8), rgba(10, 26, 51, 0.8)),
+    url("/backgrounds/arctic-custom-bg.jpg");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+[data-theme="arctic-custom"] [data-slot="card"] {
+  background: rgba(0, 0, 0, 0.7);
+  border: 3px solid #ffffff;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow:
+    0 1px 2px rgba(8, 15, 30, 0.3),
+    0 12px 28px -10px rgba(8, 15, 30, 0.45),
+    0 28px 56px -24px rgba(8, 15, 30, 0.5);
+}
+
+[data-theme="arctic-custom"] [data-slot="card"] .text-muted-foreground {
+  color: rgba(248, 250, 252, 0.62);
+}
+
+[data-theme="arctic-custom"] [data-slot="card"] .border-border {
+  border-color: rgba(248, 250, 252, 0.18);
+}
+
+[data-theme="arctic-custom"] [data-slot="textarea"] {
+  background-color: #000000;
+  color: #f8fafc;
+  border-color: rgba(248, 250, 252, 0.25);
+}
+
+[data-theme="arctic-custom"] [data-slot="card-footer"] {
+  background: rgba(248, 250, 252, 0.06);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+[data-theme="arctic-custom"] .activity-composer-submit {
+  background-color: #ffffff;
+  border-color: #ffffff;
+  color: #1e3a5f;
+}
+
+[data-theme="arctic-custom"] .activity-composer-submit:hover {
+  background-color: #dce6f0;
+}
