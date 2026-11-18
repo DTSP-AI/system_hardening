@@ -568,3 +568,32 @@
 .signin-message .signin-headline-sub { font-size: clamp(20px, 2.5vw, 36px); }
 @media (max-width: 420px) { .signin-message .signin-headline-sub { font-size: clamp(16px, 5vw, 21px); } }
 .signin-message .signin-headline-by strong { font-family: YbryxWordmark, sans-serif; font-weight: 400; letter-spacing: .045em; }
+
+/* Sharper brand hierarchy over the uninterrupted wave. */
+.signin-brand-panel { padding: clamp(36px, 5vw, 72px) clamp(30px, 5vw, 76px); }
+.signin-brand { filter: drop-shadow(0 4px 24px rgba(65, 177, 231, .14)); }
+.signin-brand small { color: #c2d8e8; letter-spacing: .18em; }
+.signin-message { margin-top: clamp(64px, 11vh, 120px); }
+.signin-message::before { content: ''; display: block; width: 70px; height: 3px; margin-bottom: 25px; background: linear-gradient(90deg, #12bfea, rgba(18, 191, 234, .08)); box-shadow: 0 0 18px rgba(8, 183, 232, .4); }
+.signin-message .signin-headline { letter-spacing: -.045em; text-shadow: 0 3px 26px rgba(0, 0, 0, .4); }
+.signin-message .signin-headline-main { font-size: clamp(32px, 3.75vw, 58px); letter-spacing: -.055em; }
+.signin-headline-main strong { font-weight: 900; }
+.signin-message .signin-headline-main span { font-weight: 300; }
+.signin-message .signin-headline-sub { margin-top: .38em; font-size: clamp(20px, 2.3vw, 34px); letter-spacing: -.025em; }
+.signin-message .signin-headline-by { font-size: .78em; margin-left: .25em; color: #eaf5fb; }
+.signin-message > p { max-width: 495px; margin-top: 27px; font-size: clamp(15px, 1.2vw, 18px); line-height: 1.7; color: #c2d5e3; }
+.signin-promise { border-color: rgba(72, 190, 233, .26); background: rgba(3, 17, 31, .76); box-shadow: 0 16px 48px rgba(0, 0, 0, .18); backdrop-filter: blur(12px); }
+.signin-benefits { color: #c2d5e3; }
+.signin-form-wrap { border: 1px solid rgba(255, 255, 255, .9); border-radius: 16px; box-shadow: 0 26px 80px rgba(0, 0, 0, .42), 0 0 0 1px rgba(85, 191, 237, .12); }
+.signin-heading h2 { color: #10233a; letter-spacing: -.045em; }
+@media (max-width: 900px) {
+  .signin-brand-panel { padding: 30px 7% 10px; }
+  .signin-message { margin-top: 44px; }
+  .signin-message::before { margin-bottom: 20px; }
+  .signin-message .signin-headline-main { font-size: clamp(28px, 7vw, 54px); }
+  .signin-message .signin-headline-sub { font-size: clamp(19px, 4.5vw, 32px); }
+}
+@media (max-width: 420px) {
+  .signin-message .signin-headline-main { font-size: clamp(26px, 8.2vw, 34px); }
+  .signin-message .signin-headline-sub { font-size: clamp(17px, 5vw, 21px); }
+}
