@@ -457,3 +457,11 @@
   --accent:#153f57; --accent-foreground:#89ddf6; --border:#29445b; --input:#345166; --ring:#38bdf8;
 }
 .dark .kpi-icon,.dark .panel-title-icon{background:#153e53;color:#79dafa}.dark .lead-next-step{background:#142e42;border-color:#29475c;color:#e8f0f8}.dark .lead-next-step p{color:#a3b9cb}.dark .lead-stage{background:#153e53;color:#89ddf6}
+
+/* A quiet, architectural texture carries the YBRYX palette through the workspace. */
+.crm-main {
+  background-image:
+    radial-gradient(ellipse at 95% 0%, rgba(56, 189, 248, .075), transparent 38%),
+    radial-gradient(ellipse at 0% 95%, rgba(37, 99, 235, .035), transparent 42%),
+    repeating-linear-gradient(135deg, transparent 0, transparent 47px, rgba(24, 112, 160, .035) 48px, transparent 49px);
+}
