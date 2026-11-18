@@ -12,6 +12,7 @@
     "lint": "eslint",
     "test": "tsx --test tests/*.test.ts",
     "user:add": "tsx scripts/add-user.ts",
+    "seed:demo": "tsx scripts/seed-demo.ts",
     "postinstall": "prisma generate"
   },
   "dependencies": {
