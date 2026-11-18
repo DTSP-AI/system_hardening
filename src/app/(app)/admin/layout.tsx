@@ -1,10 +1,9 @@
 import { redirect } from "next/navigation";
-import { auth } from "@clerk/nextjs/server";
+import { getAppUser } from "@/lib/auth/app-user";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  const { orgRole } = await auth();
-  if (orgRole !== "org:admin") {
-    redirect("/");
-  }
+  const r = await getAppUser();
+  if (r.status !== "ok") redirect("/no-access");
+  if (r.user.role !== "OWNER" && r.user.role !== "ADMIN") redirect("/");
   return <>{children}</>;
 }

@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useAuth } from "@clerk/nextjs";
 import {
   LayoutDashboard,
   Users,
@@ -17,6 +16,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSearchStore } from "@/lib/stores/search-store";
+import { useCurrentRole } from "@/lib/hooks/use-current-role";
 
 const CORE_NAV_ITEMS = [
   { href: "/", label: "Home", icon: LayoutDashboard, chip: "var(--viz-blue)" },
@@ -38,10 +38,10 @@ const ADMIN_NAV_ITEM = {
 
 export function SidebarNav() {
   const pathname = usePathname();
-  const { orgRole } = useAuth();
+  const { isAdmin } = useCurrentRole();
   const navItems = [
     ...CORE_NAV_ITEMS,
-    ...(orgRole === "org:admin" ? [ADMIN_NAV_ITEM] : []),
+    ...(isAdmin ? [ADMIN_NAV_ITEM] : []),
   ];
   const toggleSearch = useSearchStore((s) => s.toggle);
 
