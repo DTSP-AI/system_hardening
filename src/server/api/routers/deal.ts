@@ -43,7 +43,7 @@ export const dealRouter = createTRPCRouter({
   create: tenantProcedure
     .input(dealInput)
     .mutation(({ ctx, input }) =>
-      ctx.db.deal.create({ data: { ...input, tenantId: ctx.tenantId } }),
+      ctx.db.deal.create({ data: { ...input } }),
     ),
 
   update: tenantProcedure
@@ -69,7 +69,7 @@ export const dealRouter = createTRPCRouter({
       });
 
       if (deal.ownerId && deal.ownerId !== ctx.userId) {
-        await notify(ctx.db, ctx.tenantId, {
+        await notify(ctx.db, {
           userId: deal.ownerId,
           type: "DEAL_STAGE_CHANGE",
           title: `${deal.name} moved to ${stage.name}`,
@@ -84,7 +84,7 @@ export const dealRouter = createTRPCRouter({
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const deleted = await ctx.db.deal.delete({ where: { id: input.id } });
-      await logAudit(ctx.db, ctx.tenantId, {
+      await logAudit(ctx.db, {
         actorId: ctx.userId,
         entityType: "DEAL",
         entityId: input.id,
@@ -100,7 +100,7 @@ export const dealRouter = createTRPCRouter({
       const rows = await ctx.db.deal.findMany({ where: { id: { in: input.ids } } });
       const result = await ctx.db.deal.deleteMany({ where: { id: { in: input.ids } } });
       for (const row of rows) {
-        await logAudit(ctx.db, ctx.tenantId, {
+        await logAudit(ctx.db, {
           actorId: ctx.userId,
           entityType: "DEAL",
           entityId: row.id,
@@ -128,7 +128,7 @@ export const dealRouter = createTRPCRouter({
 
       for (const deal of deals) {
         if (deal.ownerId && deal.ownerId !== ctx.userId) {
-          await notify(ctx.db, ctx.tenantId, {
+          await notify(ctx.db, {
             userId: deal.ownerId,
             type: "DEAL_STAGE_CHANGE",
             title: `${deal.name} moved to ${stage.name}`,

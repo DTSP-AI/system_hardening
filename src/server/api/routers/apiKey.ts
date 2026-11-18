@@ -3,7 +3,7 @@ import { randomBytes, createHash } from "crypto";
 import { createTRPCRouter, adminProcedure } from "@/server/api/trpc";
 
 function generateKey() {
-  return `ybx_${randomBytes(24).toString("base64url")}`;
+  return `bos1_${randomBytes(24).toString("base64url")}`;
 }
 
 function hashKey(key: string) {
@@ -35,7 +35,6 @@ export const apiKeyRouter = createTRPCRouter({
           name: input.name,
           hashedKey: hashKey(key),
           createdByUserId: ctx.userId,
-          tenantId: ctx.tenantId,
         },
       });
       // Raw key is only ever returned here -- only the hash is persisted.

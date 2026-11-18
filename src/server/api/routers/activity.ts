@@ -69,7 +69,7 @@ export const activityRouter = createTRPCRouter({
     .input(activityInput)
     .mutation(({ ctx, input }) =>
       ctx.db.activity.create({
-        data: { ...input, authorId: ctx.userId, tenantId: ctx.tenantId },
+        data: { ...input, authorId: ctx.userId },
       }),
     ),
 

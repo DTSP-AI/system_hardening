@@ -8,7 +8,6 @@ export async function POST(req: Request) {
   }
 
   const url = new URL(req.url);
-  const tenantId = url.searchParams.get("tenantId");
   const userId = url.searchParams.get("userId");
   const contactId = url.searchParams.get("contactId") || undefined;
   const dealId = url.searchParams.get("dealId") || undefined;
@@ -17,7 +16,7 @@ export async function POST(req: Request) {
   // the value the recording webhook will later look this Activity up by.
   const callSid = url.searchParams.get("callSid") || params.CallSid;
 
-  if (!tenantId || !userId) {
+  if (!userId) {
     return new Response("OK", { status: 200 });
   }
 
@@ -25,7 +24,6 @@ export async function POST(req: Request) {
 
   await prisma.activity.create({
     data: {
-      tenantId,
       type: "CALL",
       contactId,
       dealId,

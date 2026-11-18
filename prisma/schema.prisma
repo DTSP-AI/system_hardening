@@ -1,6 +1,6 @@
-// Prisma schema for the YBRYX CRM rebuild.
-// Multi-tenant core: every tenant-owned table carries a tenantId, enforced both by
-// the Prisma Client Extension (src/lib/db.ts) and by Postgres RLS (prisma/rls.sql).
+// Prisma schema for BOS1 (single-tenant). One database per deployment; there is no
+// tenant scoping. Access is gated by the User allowlist (see model User) and
+// Clerk sign-in.
 
 generator client {
   provider = "prisma-client"
@@ -11,7 +11,7 @@ datasource db {
   provider = "postgresql"
 }
 
-enum MembershipRole {
+enum UserRole {
   OWNER
   ADMIN
   MEMBER
@@ -92,53 +92,20 @@ enum NotificationType {
   LEAD_CONVERTED
 }
 
-model Tenant {
+model User {
   id          String   @id @default(cuid())
-  clerkOrgId  String   @unique
-  name        String
-  slug        String   @unique
-  planTier    String   @default("free")
-  settings    Json     @default("{}")
-  smsPhoneNumber String? @unique
+  email       String   @unique // lowercased; allowlist key
+  clerkUserId String?  @unique // null until first verified sign-in
+  name        String?
+  role        UserRole @default(MEMBER)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  memberships          Membership[]
-  companies            Company[]
-  contacts             Contact[]
-  pipelineStages       PipelineStage[]
-  deals                Deal[]
-  activities           Activity[]
-  customFieldDefs      CustomFieldDefinition[]
-  apiKeys              ApiKey[]
-  todos                Todo[]
-  leads                Lead[]
-  tags                 Tag[]
-  tagAssignments       TagAssignment[]
-  notifications        Notification[]
-  attachments          Attachment[]
-  auditLogs            AuditLog[]
-
-  @@map("tenants")
-}
-
-model Membership {
-  id           String         @id @default(cuid())
-  tenantId     String
-  clerkUserId  String
-  role         MembershipRole @default(MEMBER)
-  createdAt    DateTime       @default(now())
-
-  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-
-  @@unique([tenantId, clerkUserId])
-  @@index([tenantId])
-  @@map("memberships")
+  @@map("users")
 }
 
 model Company {
   id           String   @id @default(cuid())
-  tenantId     String
   name         String
   domain       String?
   industry     String?
@@ -153,17 +120,14 @@ model Company {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  tenant   Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   contacts Contact[]
   deals    Deal[]
 
-  @@index([tenantId])
   @@map("companies")
 }
 
 model Contact {
   id           String      @id @default(cuid())
-  tenantId     String
   firstName    String
   lastName     String
   email        String?
@@ -183,35 +147,29 @@ model Contact {
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
 
-  tenant     Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   company    Company?   @relation(fields: [companyId], references: [id], onDelete: SetNull)
   deals      Deal[]
   activities Activity[]
 
-  @@index([tenantId])
   @@index([companyId])
   @@map("contacts")
 }
 
 model PipelineStage {
   id        String   @id @default(cuid())
-  tenantId  String
   name      String
   sortOrder Int
   isWon     Boolean  @default(false)
   isLost    Boolean  @default(false)
   color     String   @default("#2563EB")
 
-  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   deals  Deal[]
 
-  @@index([tenantId])
   @@map("pipeline_stages")
 }
 
 model Deal {
   id                String     @id @default(cuid())
-  tenantId          String
   name              String
   contactId         String?
   companyId         String?
@@ -230,20 +188,17 @@ model Deal {
   createdAt         DateTime   @default(now())
   updatedAt         DateTime   @updatedAt
 
-  tenant     Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   contact    Contact?      @relation(fields: [contactId], references: [id], onDelete: SetNull)
   company    Company?      @relation(fields: [companyId], references: [id], onDelete: SetNull)
   stage      PipelineStage @relation(fields: [stageId], references: [id], onDelete: Restrict)
   activities Activity[]
 
-  @@index([tenantId])
   @@index([stageId])
   @@map("deals")
 }
 
 model Activity {
   id          String       @id @default(cuid())
-  tenantId    String
   type        ActivityType
   contactId   String?
   dealId      String?
@@ -254,11 +209,9 @@ model Activity {
   metadata    Json         @default("{}")
   createdAt   DateTime     @default(now())
 
-  tenant  Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   contact Contact? @relation(fields: [contactId], references: [id], onDelete: Cascade)
   deal    Deal?    @relation(fields: [dealId], references: [id], onDelete: Cascade)
 
-  @@index([tenantId])
   @@index([contactId])
   @@index([dealId])
   @@map("activities")
@@ -266,7 +219,6 @@ model Activity {
 
 model CustomFieldDefinition {
   id         String                 @id @default(cuid())
-  tenantId   String
   entityType CustomFieldEntityType
   key        String
   label      String
@@ -275,16 +227,13 @@ model CustomFieldDefinition {
   required   Boolean                @default(false)
   sortOrder  Int                    @default(0)
 
-  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
-  @@unique([tenantId, entityType, key])
-  @@index([tenantId])
+  @@unique([entityType, key])
   @@map("custom_field_definitions")
 }
 
 model ApiKey {
   id              String    @id @default(cuid())
-  tenantId        String
   name            String
   hashedKey       String    @unique
   createdByUserId String
@@ -293,9 +242,7 @@ model ApiKey {
   lastUsedAt      DateTime?
   createdAt       DateTime  @default(now())
 
-  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
-  @@index([tenantId])
   @@map("api_keys")
 }
 
@@ -305,7 +252,6 @@ model ApiKey {
 /// leads are never deleted on conversion, just marked terminal.
 model Lead {
   id                 String     @id @default(cuid())
-  tenantId           String
   firstName          String
   lastName           String
   email              String?
@@ -319,17 +265,14 @@ model Lead {
   createdAt          DateTime   @default(now())
   updatedAt          DateTime   @updatedAt
 
-  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
-  @@index([tenantId])
   @@map("leads")
 }
 
 /// Personal Eisenhower-matrix todos shown on each user's home dashboard --
-/// scoped to tenant + authorId (the Clerk user who owns them), never shared.
+/// scoped to authorId (the Clerk user who owns them), never shared.
 model Todo {
   id        String       @id @default(cuid())
-  tenantId  String
   authorId  String
   title     String
   quadrant  TodoQuadrant
@@ -337,25 +280,20 @@ model Todo {
   createdAt DateTime     @default(now())
   updatedAt DateTime     @updatedAt
 
-  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
-  @@index([tenantId])
   @@index([authorId])
   @@map("todos")
 }
 
 model Tag {
   id        String   @id @default(cuid())
-  tenantId  String
   name      String
   color     String
   createdAt DateTime @default(now())
 
-  tenant      Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   assignments TagAssignment[]
 
-  @@unique([tenantId, name])
-  @@index([tenantId])
+  @@unique([name])
   @@map("tags")
 }
 
@@ -363,24 +301,20 @@ model Tag {
 /// generalized to entityType+entityId since Tags apply to four entity kinds.
 model TagAssignment {
   id         String             @id @default(cuid())
-  tenantId   String
   tagId      String
   entityType TaggableEntityType
   entityId   String
   createdAt  DateTime           @default(now())
 
-  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   tag    Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
 
   @@unique([tagId, entityType, entityId])
-  @@index([tenantId])
   @@index([entityType, entityId])
   @@map("tag_assignments")
 }
 
 model Attachment {
   id           String             @id @default(cuid())
-  tenantId     String
   entityType   TaggableEntityType
   entityId     String
   fileName     String
@@ -390,16 +324,13 @@ model Attachment {
   uploadedById String
   createdAt    DateTime           @default(now())
 
-  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
-  @@index([tenantId])
   @@index([entityType, entityId])
   @@map("attachments")
 }
 
 model Notification {
   id        String           @id @default(cuid())
-  tenantId  String
   userId    String
   type      NotificationType
   title     String
@@ -408,16 +339,13 @@ model Notification {
   readAt    DateTime?
   createdAt DateTime         @default(now())
 
-  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
-  @@index([tenantId])
   @@index([userId])
   @@map("notifications")
 }
 
 model AuditLog {
   id         String      @id @default(cuid())
-  tenantId   String
   actorId    String
   entityType String
   entityId   String
@@ -425,9 +353,7 @@ model AuditLog {
   diff       Json?
   createdAt  DateTime    @default(now())
 
-  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
-  @@index([tenantId])
   @@index([entityType, entityId])
   @@map("audit_logs")
 }

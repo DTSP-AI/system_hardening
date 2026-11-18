@@ -32,7 +32,6 @@ export const pipelineStageRouter = createTRPCRouter({
           isWon: input.isWon,
           isLost: input.isLost,
           sortOrder: (_max.sortOrder ?? -1) + 1,
-          tenantId: ctx.tenantId,
         },
       });
     }),

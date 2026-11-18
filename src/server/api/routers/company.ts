@@ -35,7 +35,7 @@ export const companyRouter = createTRPCRouter({
   create: tenantProcedure
     .input(companyInput)
     .mutation(({ ctx, input }) =>
-      ctx.db.company.create({ data: { ...input, tenantId: ctx.tenantId } }),
+      ctx.db.company.create({ data: { ...input } }),
     ),
 
   update: tenantProcedure
@@ -49,7 +49,7 @@ export const companyRouter = createTRPCRouter({
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const deleted = await ctx.db.company.delete({ where: { id: input.id } });
-      await logAudit(ctx.db, ctx.tenantId, {
+      await logAudit(ctx.db, {
         actorId: ctx.userId,
         entityType: "COMPANY",
         entityId: input.id,
@@ -65,7 +65,7 @@ export const companyRouter = createTRPCRouter({
       const rows = await ctx.db.company.findMany({ where: { id: { in: input.ids } } });
       const result = await ctx.db.company.deleteMany({ where: { id: { in: input.ids } } });
       for (const row of rows) {
-        await logAudit(ctx.db, ctx.tenantId, {
+        await logAudit(ctx.db, {
           actorId: ctx.userId,
           entityType: "COMPANY",
           entityId: row.id,
@@ -80,7 +80,7 @@ export const companyRouter = createTRPCRouter({
     .input(z.object({ rows: z.array(companyInput) }))
     .mutation(({ ctx, input }) =>
       ctx.db.company.createMany({
-        data: input.rows.map((row) => ({ ...row, tenantId: ctx.tenantId })),
+        data: input.rows.map((row) => ({ ...row })),
       }),
     ),
 });

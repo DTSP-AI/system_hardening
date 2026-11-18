@@ -11,7 +11,7 @@ export const tagRouter = createTRPCRouter({
   create: tenantProcedure
     .input(z.object({ name: z.string().min(1), color: z.string().min(1) }))
     .mutation(({ ctx, input }) =>
-      ctx.db.tag.create({ data: { ...input, tenantId: ctx.tenantId } }),
+      ctx.db.tag.create({ data: { ...input } }),
     ),
 
   delete: adminProcedure
@@ -35,7 +35,7 @@ export const tagRouter = createTRPCRouter({
         entityId: z.string(),
       }),
     )
-    .mutation(({ ctx, input }) => ctx.db.tagAssignment.create({ data: { ...input, tenantId: ctx.tenantId } })),
+    .mutation(({ ctx, input }) => ctx.db.tagAssignment.create({ data: { ...input } })),
 
   unassign: tenantProcedure
     .input(z.object({ id: z.string() }))
@@ -55,7 +55,6 @@ export const tagRouter = createTRPCRouter({
           tagId: input.tagId,
           entityType: input.entityType,
           entityId,
-          tenantId: ctx.tenantId,
         })),
         skipDuplicates: true,
       }),

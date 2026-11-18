@@ -26,12 +26,8 @@ export async function readValidatedTwilioForm(
   return isValid ? params : null;
 }
 
-/** Splits a Voice SDK identity ("<tenantId>__<clerkUserId>") back apart. */
-export function parseCallIdentity(identity: string): { tenantId: string; userId: string } | null {
-  const separatorIndex = identity.indexOf("__");
-  if (separatorIndex === -1) return null;
-  return {
-    tenantId: identity.slice(0, separatorIndex),
-    userId: identity.slice(separatorIndex + 2),
-  };
+/** A Voice SDK identity is the bare Clerk userId. */
+export function parseCallIdentity(identity: string): { userId: string } | null {
+  if (!identity) return null;
+  return { userId: identity };
 }

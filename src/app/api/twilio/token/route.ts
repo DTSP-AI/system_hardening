@@ -1,20 +1,14 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import twilio from "twilio";
-import { prisma } from "@/lib/db";
 
 const { AccessToken } = twilio.jwt;
 const { VoiceGrant } = AccessToken;
 
 export async function POST() {
-  const { userId, orgId } = await auth();
-  if (!userId || !orgId) {
+  const { userId } = await auth();
+  if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const tenant = await prisma.tenant.findUnique({ where: { clerkOrgId: orgId } });
-  if (!tenant) {
-    return NextResponse.json({ error: "No tenant for this organization" }, { status: 404 });
   }
 
   const { TWILIO_ACCOUNT_SID, TWILIO_API_KEY_SID, TWILIO_API_KEY_SECRET, TWILIO_TWIML_APP_SID } =
@@ -23,7 +17,7 @@ export async function POST() {
     return NextResponse.json({ error: "Calling is not configured" }, { status: 503 });
   }
 
-  const identity = `${tenant.id}__${userId}`;
+  const identity = userId;
 
   const voiceGrant = new VoiceGrant({
     outgoingApplicationSid: TWILIO_TWIML_APP_SID,

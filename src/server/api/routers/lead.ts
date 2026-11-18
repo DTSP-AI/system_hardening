@@ -26,7 +26,7 @@ export const leadRouter = createTRPCRouter({
 
   create: tenantProcedure
     .input(leadInput)
-    .mutation(({ ctx, input }) => ctx.db.lead.create({ data: { ...input, tenantId: ctx.tenantId } })),
+    .mutation(({ ctx, input }) => ctx.db.lead.create({ data: { ...input } })),
 
   update: tenantProcedure
     .input(leadInput.partial().extend({ id: z.string() }))
@@ -45,7 +45,7 @@ export const leadRouter = createTRPCRouter({
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const deleted = await ctx.db.lead.delete({ where: { id: input.id } });
-      await logAudit(ctx.db, ctx.tenantId, {
+      await logAudit(ctx.db, {
         actorId: ctx.userId,
         entityType: "LEAD",
         entityId: input.id,
@@ -61,7 +61,7 @@ export const leadRouter = createTRPCRouter({
       const rows = await ctx.db.lead.findMany({ where: { id: { in: input.ids } } });
       const result = await ctx.db.lead.deleteMany({ where: { id: { in: input.ids } } });
       for (const row of rows) {
-        await logAudit(ctx.db, ctx.tenantId, {
+        await logAudit(ctx.db, {
           actorId: ctx.userId,
           entityType: "LEAD",
           entityId: row.id,
@@ -76,7 +76,7 @@ export const leadRouter = createTRPCRouter({
     .input(z.object({ rows: z.array(leadInput) }))
     .mutation(({ ctx, input }) =>
       ctx.db.lead.createMany({
-        data: input.rows.map((row) => ({ ...row, tenantId: ctx.tenantId })),
+        data: input.rows.map((row) => ({ ...row })),
       }),
     ),
 
@@ -92,7 +92,7 @@ export const leadRouter = createTRPCRouter({
           ? existing.id
           : (
               await ctx.db.company.create({
-                data: { name: lead.companyName, tenantId: ctx.tenantId },
+                data: { name: lead.companyName },
               })
             ).id;
       }
@@ -106,7 +106,6 @@ export const leadRouter = createTRPCRouter({
           jobTitle: lead.jobTitle,
           leadSource: lead.source,
           companyId,
-          tenantId: ctx.tenantId,
         },
       });
 
@@ -116,7 +115,7 @@ export const leadRouter = createTRPCRouter({
       });
 
       if (lead.ownerId && lead.ownerId !== ctx.userId) {
-        await notify(ctx.db, ctx.tenantId, {
+        await notify(ctx.db, {
           userId: lead.ownerId,
           type: "LEAD_CONVERTED",
           title: `${lead.firstName} ${lead.lastName} converted to a contact`,

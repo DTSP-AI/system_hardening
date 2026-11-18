@@ -27,7 +27,7 @@ export const attachmentRouter = createTRPCRouter({
     )
     .mutation(({ ctx, input }) =>
       ctx.db.attachment.create({
-        data: { ...input, uploadedById: ctx.userId, tenantId: ctx.tenantId },
+        data: { ...input, uploadedById: ctx.userId },
       }),
     ),
 
@@ -36,11 +36,7 @@ export const attachmentRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const attachment = await ctx.db.attachment.findUniqueOrThrow({ where: { id: input.id } });
       if (attachment.uploadedById !== ctx.userId) {
-        await requireRole(
-          ctx.db,
-          { tenantId: ctx.tenantId, clerkOrgId: ctx.orgId!, clerkUserId: ctx.userId },
-          ["OWNER", "ADMIN"],
-        );
+        await requireRole(ctx.db, ctx.userId, ["OWNER", "ADMIN"]);
       }
       return ctx.db.attachment.delete({ where: { id: input.id } });
     }),

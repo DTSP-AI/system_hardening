@@ -39,14 +39,12 @@ export async function POST(req: Request) {
   const parentCallSid = params.CallSid ?? "";
 
   const statusUrl = new URL(`${proto}://${host}/api/twilio/voice/status`);
-  statusUrl.searchParams.set("tenantId", identity.tenantId);
   statusUrl.searchParams.set("userId", identity.userId);
   if (params.contactId) statusUrl.searchParams.set("contactId", params.contactId);
   if (params.dealId) statusUrl.searchParams.set("dealId", params.dealId);
   statusUrl.searchParams.set("callSid", parentCallSid);
 
   const recordingUrl = new URL(`${proto}://${host}/api/twilio/voice/recording`);
-  recordingUrl.searchParams.set("tenantId", identity.tenantId);
   recordingUrl.searchParams.set("callSid", parentCallSid);
 
   const whisperUrl = new URL(`${proto}://${host}/api/twilio/voice/announce`);

@@ -4,21 +4,16 @@ import { prisma } from "@/lib/db";
 
 export async function GET(_req: Request, { params }: { params: Promise<{ sid: string }> }) {
   const { sid } = await params;
-  const { userId, orgId } = await auth();
-  if (!userId || !orgId) {
+  const { userId } = await auth();
+  if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const tenant = await prisma.tenant.findUnique({ where: { clerkOrgId: orgId } });
-  if (!tenant) {
-    return NextResponse.json({ error: "No tenant for this organization" }, { status: 404 });
-  }
-
-  // Recordings aren't public on Twilio's side -- confirm this tenant actually
-  // owns an activity referencing this recording before proxying, so one
-  // tenant can't fetch another's audio by guessing a RecordingSid.
+  // Recordings aren't public on Twilio's side -- confirm an activity
+  // actually references this recording before proxying, so audio can't be
+  // fetched by guessing a RecordingSid.
   const owned = await prisma.activity.findFirst({
-    where: { tenantId: tenant.id, type: "CALL", metadata: { path: ["recordingSid"], equals: sid } },
+    where: { type: "CALL", metadata: { path: ["recordingSid"], equals: sid } },
     select: { id: true },
   });
   if (!owned) {

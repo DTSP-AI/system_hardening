@@ -1,9 +1,8 @@
-import type { ScopedTx } from "@/lib/db";
+import type { DbTx } from "@/lib/db";
 
-/** Writes a Notification row inline from within a tenantProcedure's `ctx.db`. */
+/** Writes a Notification row inline from within a procedure's `ctx.db`. */
 export function notify(
-  db: ScopedTx,
-  tenantId: string,
+  db: DbTx,
   params: {
     userId: string;
     type:
@@ -15,5 +14,5 @@ export function notify(
     linkHref?: string;
   },
 ) {
-  return db.notification.create({ data: { ...params, tenantId } });
+  return db.notification.create({ data: params });
 }

@@ -15,7 +15,7 @@ export const todoRouter = createTRPCRouter({
     .input(z.object({ title: z.string().min(1), quadrant: quadrantSchema }))
     .mutation(({ ctx, input }) =>
       ctx.db.todo.create({
-        data: { ...input, authorId: ctx.userId, tenantId: ctx.tenantId },
+        data: { ...input, authorId: ctx.userId },
       }),
     ),
 

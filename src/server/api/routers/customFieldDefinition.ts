@@ -34,9 +34,9 @@ export const customFieldDefinitionRouter = createTRPCRouter({
       });
       try {
         const created = await ctx.db.customFieldDefinition.create({
-          data: { ...input, sortOrder: (_max.sortOrder ?? -1) + 1, tenantId: ctx.tenantId },
+          data: { ...input, sortOrder: (_max.sortOrder ?? -1) + 1 },
         });
-        await logAudit(ctx.db, ctx.tenantId, {
+        await logAudit(ctx.db, {
           actorId: ctx.userId,
           entityType: "CUSTOM_FIELD_DEFINITION",
           entityId: created.id,
@@ -67,7 +67,7 @@ export const customFieldDefinitionRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const { id, ...data } = input;
       const updated = await ctx.db.customFieldDefinition.update({ where: { id }, data });
-      await logAudit(ctx.db, ctx.tenantId, {
+      await logAudit(ctx.db, {
         actorId: ctx.userId,
         entityType: "CUSTOM_FIELD_DEFINITION",
         entityId: id,
@@ -81,7 +81,7 @@ export const customFieldDefinitionRouter = createTRPCRouter({
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const deleted = await ctx.db.customFieldDefinition.delete({ where: { id: input.id } });
-      await logAudit(ctx.db, ctx.tenantId, {
+      await logAudit(ctx.db, {
         actorId: ctx.userId,
         entityType: "CUSTOM_FIELD_DEFINITION",
         entityId: input.id,

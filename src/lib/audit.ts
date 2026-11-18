@@ -1,15 +1,14 @@
 import type { Prisma } from "@generated/prisma/client";
-import type { ScopedTx } from "@/lib/db";
+import type { DbTx } from "@/lib/db";
 
 /** Normalizes a Prisma record (Decimal/Date fields) into plain JSON for the `diff` column. */
 export function toJsonSafe(value: unknown): Prisma.InputJsonValue {
   return JSON.parse(JSON.stringify(value));
 }
 
-/** Writes an AuditLog row inline from within a tenantProcedure's `ctx.db`. */
+/** Writes an AuditLog row inline from within a procedure's `ctx.db`. */
 export function logAudit(
-  db: ScopedTx,
-  tenantId: string,
+  db: DbTx,
   params: {
     actorId: string;
     entityType: string;
@@ -18,5 +17,5 @@ export function logAudit(
     diff?: Prisma.InputJsonValue;
   },
 ) {
-  return db.auditLog.create({ data: { ...params, tenantId } });
+  return db.auditLog.create({ data: params });
 }

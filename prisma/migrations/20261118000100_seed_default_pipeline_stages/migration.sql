@@ -1,0 +1,1 @@
+INSERT INTO "pipeline_stages" ("id","name","sortOrder","isWon","isLost") VALUES ('stage_new','New',0,false,false),('stage_qualifying','Qualifying',1,false,false),('stage_proposal','Proposal',2,false,false),('stage_negotiation','Negotiation',3,false,false),('stage_won','Won',4,true,false),('stage_lost','Lost',5,false,true);

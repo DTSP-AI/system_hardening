@@ -18,7 +18,6 @@ export const emailRouter = createTRPCRouter({
         data: {
           type: "EMAIL",
           contactId: input.contactId,
-          tenantId: ctx.tenantId,
           authorId: ctx.userId,
           body: input.body,
           metadata: { direction: "outbound", to: contact.email, from, subject: input.subject, resendId },

@@ -1,17 +1,11 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { put } from "@vercel/blob";
-import { prisma } from "@/lib/db";
 
 export async function POST(req: Request) {
-  const { userId, orgId } = await auth();
-  if (!userId || !orgId) {
+  const { userId } = await auth();
+  if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const tenant = await prisma.tenant.findUnique({ where: { clerkOrgId: orgId } });
-  if (!tenant) {
-    return NextResponse.json({ error: "No tenant for this organization" }, { status: 404 });
   }
 
   const formData = await req.formData();
@@ -20,7 +14,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Missing file" }, { status: 400 });
   }
 
-  const blob = await put(`${tenant.id}/${crypto.randomUUID()}-${file.name}`, file, {
+  const blob = await put(`attachments/${crypto.randomUUID()}-${file.name}`, file, {
     access: "public",
     token: process.env.BLOB_READ_WRITE_TOKEN,
   });
