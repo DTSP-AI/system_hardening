@@ -558,8 +558,12 @@
 
 /* Two weights make the headline read as a single, balanced lockup. */
 .signin-message .signin-headline { line-height: 1.12; }
-.signin-headline-main { display: block; white-space: nowrap; text-transform: uppercase; font-size: clamp(32px, 4vw, 58px); }
+.signin-message .signin-headline-main { color: #fff; display: block; white-space: nowrap; text-transform: uppercase; font-size: clamp(32px, 4vw, 58px); }
 .signin-headline-main strong { font-weight: 800; }
 .signin-message .signin-headline-main span { color: inherit; font-weight: 300; }
 .signin-message .signin-headline-sub { display: block; margin-top: .2em; color: #08b7e8; font-size: clamp(25px, 3vw, 42px); font-weight: 400; white-space: nowrap; }
 @media (max-width: 420px) { .signin-headline-main { font-size: clamp(27px, 8.5vw, 34px); } .signin-message .signin-headline-sub { font-size: clamp(22px, 6.6vw, 28px); } }
+
+.signin-message .signin-headline-by { color: #fff; }
+.signin-message .signin-headline-sub { font-size: clamp(20px, 2.5vw, 36px); }
+@media (max-width: 420px) { .signin-message .signin-headline-sub { font-size: clamp(16px, 5vw, 21px); } }
