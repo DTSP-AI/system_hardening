@@ -4,7 +4,6 @@ import { useEffect, useRef } from "react";
 import { Device, type Call } from "@twilio/voice-sdk";
 import { toast } from "sonner";
 import { useCallStore } from "@/lib/stores/call-store";
-import { useCoachPanelStore } from "@/lib/stores/coach-panel-store";
 import { usePhoneControlsStore } from "@/lib/stores/phone-controls-store";
 
 async function fetchToken(): Promise<string> {
@@ -19,7 +18,6 @@ async function fetchToken(): Promise<string> {
 
 export function SoftphoneDock() {
   const { status, current, setStatus, setCallSid, reset } = useCallStore();
-  const { open: openCoach, close: closeCoach } = useCoachPanelStore();
   const { register: registerPhoneControls, reset: resetPhoneControls } = usePhoneControlsStore();
   const deviceRef = useRef<Device | null>(null);
   const callRef = useRef<Call | null>(null);
@@ -64,7 +62,6 @@ export function SoftphoneDock() {
           hangup: () => {
             callRef.current?.disconnect();
             reset();
-            closeCoach();
           },
         });
 
@@ -73,23 +70,19 @@ export function SoftphoneDock() {
           const sid = call.parameters.CallSid;
           if (sid) {
             setCallSid(sid);
-            if (current?.wantsCoach) openCoach(sid);
           }
         });
         call.on("disconnect", () => {
           reset();
-          closeCoach();
           callRef.current = null;
         });
         call.on("cancel", () => {
           reset();
-          closeCoach();
           callRef.current = null;
         });
         call.on("error", (err) => {
           toast.error(err.message ?? "Call failed");
           reset();
-          closeCoach();
           callRef.current = null;
         });
 
@@ -103,7 +96,7 @@ export function SoftphoneDock() {
     return () => {
       cancelled = true;
     };
-  }, [status, current, setStatus, setCallSid, reset, openCoach, closeCoach, registerPhoneControls]);
+  }, [status, current, setStatus, setCallSid, reset, registerPhoneControls]);
 
   useEffect(() => {
     // Only reset on a true return to idle -- resetting on every non-"active" status
@@ -129,6 +122,6 @@ export function SoftphoneDock() {
 
   // Headless: owns the Twilio Device/Call lifecycle and registers the shared
   // phone-controls handlers, but renders nothing -- call UI lives in the
-  // header (see HeaderPhoneControls) and the coach panel.
+  // header (see HeaderPhoneControls).
   return null;
 }

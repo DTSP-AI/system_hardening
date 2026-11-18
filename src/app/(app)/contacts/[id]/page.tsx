@@ -2,7 +2,7 @@
 
 import { use } from "react";
 import Link from "next/link";
-import { PhoneCall, Sparkles } from "lucide-react";
+import { PhoneCall } from "lucide-react";
 import { useAuth } from "@clerk/nextjs";
 import { isInsuranceOrgSlug } from "@/lib/tenant-vertical";
 import { trpc } from "@/lib/trpc/client";
@@ -129,22 +129,6 @@ export default function ContactDetailPage({ params }: { params: Promise<{ id: st
                     }
                   >
                     <PhoneCall className="size-3.5" />
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="border-accent-foreground/40 text-accent-foreground hover:bg-accent hover:text-accent-foreground"
-                    title="Start a coached call"
-                    onClick={() =>
-                      requestCall({
-                        phone: contact.data!.phone!,
-                        contactId: contact.data!.id,
-                        displayName: `${contact.data!.firstName} ${contact.data!.lastName}`,
-                        wantsCoach: true,
-                      })
-                    }
-                  >
-                    <Sparkles className="size-3.5" /> CC
                   </Button>
                 </div>
               )}

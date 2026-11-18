@@ -10,10 +10,6 @@ export interface PendingCall {
   // Only known once Twilio's "accept" event fires (call.parameters.CallSid) --
   // not available at requestCall time, so this starts unset even while active.
   callSid?: string;
-  // Set by the "CC" button -- once callSid becomes known on "accept", the
-  // softphone dock auto-opens the inline coach panel instead of requiring a
-  // second manual click.
-  wantsCoach?: boolean;
 }
 
 interface CallStore {

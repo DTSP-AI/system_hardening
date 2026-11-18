@@ -1,5 +1,4 @@
 import twilio from "twilio";
-import { prisma } from "@/lib/db";
 import { readValidatedTwilioForm, parseCallIdentity } from "@/lib/twilio/validate";
 
 export async function POST(req: Request) {
@@ -54,60 +53,6 @@ export async function POST(req: Request) {
 
   // Heard by the agent's browser leg before the callee is dialed.
   response.say("This call may be recorded for quality and training purposes.");
-
-  // AI coaching relay -- a parallel sibling of <Dial>, not a replacement. Only
-  // added when the relay is actually provisioned (Phase 0), so this call flow
-  // degrades to the existing dial/record/whisper behavior, unaffected, until
-  // then. track: "both_tracks" is required -- Twilio defaults to inbound-only
-  // (the callee's audio), which would silently drop the rep's own speech.
-  // Custom params ride as <Parameter> children, the only channel Twilio's
-  // Media Streams `start` event actually delivers custom data through.
-  if (process.env.COACHING_RELAY_WS_URL) {
-    // Personalization lookup -- the relay holds no DB credentials by design, so
-    // contact/company name must be resolved here and threaded through as plain
-    // <Parameter> values. contactId (direct) takes priority; dealId is a
-    // fallback path when only a deal, not a contact, was attached to the call.
-    let contactName: string | undefined;
-    let companyId: string | undefined;
-
-    if (params.contactId) {
-      const contact = await prisma.contact.findUnique({
-        where: { id: params.contactId },
-        select: { firstName: true, lastName: true, companyId: true },
-      });
-      if (contact) {
-        contactName = `${contact.firstName} ${contact.lastName}`.trim();
-        companyId = contact.companyId ?? undefined;
-      }
-    } else if (params.dealId) {
-      const deal = await prisma.deal.findUnique({
-        where: { id: params.dealId },
-        select: { companyId: true, contact: { select: { firstName: true, lastName: true } } },
-      });
-      if (deal) {
-        companyId = deal.companyId ?? undefined;
-        if (deal.contact) contactName = `${deal.contact.firstName} ${deal.contact.lastName}`.trim();
-      }
-    }
-
-    const companyName = companyId
-      ? (await prisma.company.findUnique({ where: { id: companyId }, select: { name: true } }))?.name
-      : undefined;
-
-    const start = response.start();
-    const stream = start.stream({
-      url: `${process.env.COACHING_RELAY_WS_URL}/twilio-stream`,
-      track: "both_tracks",
-    });
-    stream.parameter({ name: "tenantId", value: identity.tenantId });
-    stream.parameter({ name: "userId", value: identity.userId });
-    stream.parameter({ name: "callSid", value: parentCallSid });
-    if (params.contactId) stream.parameter({ name: "contactId", value: params.contactId });
-    if (params.dealId) stream.parameter({ name: "dealId", value: params.dealId });
-    if (contactName) stream.parameter({ name: "contactName", value: contactName });
-    if (companyName) stream.parameter({ name: "companyName", value: companyName });
-    stream.parameter({ name: "secret", value: process.env.COACHING_RELAY_SHARED_SECRET ?? "" });
-  }
 
   const dial = response.dial({
     callerId: process.env.TWILIO_CALLER_ID || undefined,

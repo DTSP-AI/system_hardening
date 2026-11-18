@@ -20,9 +20,8 @@ interface PhoneControlsStore {
 }
 
 /** Shared imperative call controls, registered by SoftphoneDock (the only place
- * holding the live Twilio Call ref) so both the floating dock and the docked
- * CoachPanel can render mute/dialpad/hangup for the same active call --
- * mirrors the useCallStore/useCoachPanelStore cross-component UI-state precedent. */
+ * holding the live Twilio Call ref) so both the floating dock and the header
+ * phone controls can render mute/dialpad/hangup for the same active call. */
 export const usePhoneControlsStore = create<PhoneControlsStore>((set) => ({
   muted: false,
   dialpadOpen: false,

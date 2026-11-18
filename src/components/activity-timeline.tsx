@@ -255,68 +255,10 @@ function ActivityList({
                   src={`/api/twilio/recording/${call.recordingSid}`}
                 />
               )}
-              {call?.callSid && <CoachingSessionPanel callSid={call.callSid} />}
             </div>
           </div>
         );
       })}
-    </div>
-  );
-}
-
-type CoachingTranscriptLine = { speaker: "rep" | "caller"; text: string; ts: number };
-type CoachingTip = { text: string; ts: number };
-
-function CoachingSessionPanel({ callSid }: { callSid: string }) {
-  const [open, setOpen] = useState(false);
-  const session = trpc.coaching.byCallSid.useQuery({ callSid }, { enabled: open });
-
-  if (!session.data && !open) {
-    return (
-      <Button variant="ghost" size="sm" className="mt-2 h-auto p-0 text-xs" onClick={() => setOpen(true)}>
-        View AI coaching session
-      </Button>
-    );
-  }
-  if (!session.data) {
-    return session.isFetched ? (
-      <p className="mt-2 text-xs text-muted-foreground">No AI coaching session for this call.</p>
-    ) : null;
-  }
-
-  const transcript = (session.data.transcript as CoachingTranscriptLine[]) ?? [];
-  const tips = (session.data.tips as CoachingTip[]) ?? [];
-
-  return (
-    <div className="mt-2 rounded-md border border-accent-foreground/20 bg-accent p-2">
-      <button
-        type="button"
-        className="text-xs font-medium text-muted-foreground hover:text-foreground"
-        onClick={() => setOpen(false)}
-      >
-        Hide AI coaching session
-      </button>
-      {tips.length > 0 && (
-        <div className="mt-2 flex flex-col gap-1.5">
-          {tips.map((tip, i) => (
-            <p key={i} className="border-l-2 border-accent-foreground/50 pl-2 text-xs text-card-foreground">
-              {tip.text}
-            </p>
-          ))}
-        </div>
-      )}
-      {transcript.length > 0 && (
-        <div className="mt-2 flex flex-col gap-1 border-t border-border pt-2">
-          {transcript.map((line, i) => (
-            <p key={i} className="text-xs">
-              <span className="font-medium text-muted-foreground">
-                {line.speaker === "rep" ? "Rep: " : "Caller: "}
-              </span>
-              {line.text}
-            </p>
-          ))}
-        </div>
-      )}
     </div>
   );
 }

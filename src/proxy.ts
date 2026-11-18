@@ -8,9 +8,6 @@ const isPublicRoute = createRouteMatcher([
   // Twilio's own server-to-server callbacks -- no Clerk session present,
   // authenticated instead via X-Twilio-Signature (readValidatedTwilioForm).
   "/api/twilio/voice(.*)",
-  // Coaching relay -> CRM persistence callback -- no Clerk session, authenticated
-  // instead via X-Coaching-Relay-Secret (see src/app/api/internal/coaching/route.ts).
-  "/api/internal/coaching(.*)",
 ]);
 
 const isOnboardingRoute = createRouteMatcher(["/onboarding(.*)"]);

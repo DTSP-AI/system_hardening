@@ -20,7 +20,6 @@ import { commissionRouter } from "@/server/api/routers/commission";
 import { claimRouter } from "@/server/api/routers/claim";
 import { attachmentRouter } from "@/server/api/routers/attachment";
 import { auditLogRouter } from "@/server/api/routers/auditLog";
-import { coachingRouter } from "@/server/api/routers/coaching";
 import { dashboardRouter } from "@/server/api/routers/dashboard";
 
 export const appRouter = createTRPCRouter({
@@ -46,7 +45,6 @@ export const appRouter = createTRPCRouter({
   claim: claimRouter,
   attachment: attachmentRouter,
   auditLog: auditLogRouter,
-  coaching: coachingRouter,
 });
 
 export type AppRouter = typeof appRouter;

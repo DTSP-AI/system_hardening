@@ -1,17 +1,14 @@
 "use client";
 
-import { Mic, MicOff, Grid3x3, Sparkles, PhoneOff, PhoneCall } from "lucide-react";
+import { Mic, MicOff, Grid3x3, PhoneOff, PhoneCall } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCallStore } from "@/lib/stores/call-store";
 import { usePhoneControlsStore } from "@/lib/stores/phone-controls-store";
-import { useCoachPanelStore } from "@/lib/stores/coach-panel-store";
 
 const DIALPAD_DIGITS = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "*", "0", "#"];
 
 export function HeaderPhoneControls() {
   const { status, current, error } = useCallStore();
-  const { isOpen: coachOpen, callSid: coachCallSid, open: openCoach, close: closeCoach } =
-    useCoachPanelStore();
   const { muted, dialpadOpen, digitsSent, seconds, toggleMute, sendDigit, hangup, toggleDialpad } =
     usePhoneControlsStore();
 
@@ -50,20 +47,6 @@ export function HeaderPhoneControls() {
             >
               <Grid3x3 className="size-3.5" />
             </Button>
-            {current?.callSid && (
-              <Button
-                variant={coachOpen && coachCallSid === current.callSid ? "default" : "outline"}
-                size="icon-sm"
-                title="AI Coach"
-                onClick={() =>
-                  coachOpen && coachCallSid === current.callSid
-                    ? closeCoach()
-                    : openCoach(current.callSid!)
-                }
-              >
-                <Sparkles className="size-3.5" />
-              </Button>
-            )}
           </>
         )}
         <Button variant="destructive" size="icon-sm" onClick={() => hangup?.()}>

@@ -2,7 +2,7 @@
 
 import { use } from "react";
 import Link from "next/link";
-import { PhoneCall, Sparkles } from "lucide-react";
+import { PhoneCall } from "lucide-react";
 import { trpc } from "@/lib/trpc/client";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -139,22 +139,6 @@ export default function DealDetailPage({ params }: { params: Promise<{ id: strin
                     }
                   >
                     <PhoneCall className="size-3.5" />
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    title="Start a coached call"
-                    onClick={() =>
-                      requestCall({
-                        phone: deal.data!.contact!.phone!,
-                        contactId: deal.data!.contact!.id,
-                        dealId: deal.data!.id,
-                        displayName: `${deal.data!.contact!.firstName} ${deal.data!.contact!.lastName}`,
-                        wantsCoach: true,
-                      })
-                    }
-                  >
-                    <Sparkles className="size-3.5" /> CC
                   </Button>
                 </div>
               )}
