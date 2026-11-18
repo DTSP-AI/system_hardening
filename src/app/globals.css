@@ -188,11 +188,9 @@
 /*
   Backdrop layer behind the app shell. The default theme paints a stylized
   vector solar array (public/backgrounds/solar-array.svg -- pure SVG, no
-  raster, crisp at any DPR) under a scrim of the theme's own --background.
-  Scrim strength guarantees WCAG AA (>= 4.5:1) for --foreground and
-  --muted-foreground even over the artwork's brightest pixel (the white sun
-  core): 88% in dark, 94% in light. The flat --background color stays
-  underneath as the fallback. The legacy Arctic Custom / Signal treatments
+  raster, crisp at any DPR), shown with no scrim (removed at the owner's
+  request; text contrast over the art is not guaranteed). The flat
+  --background color stays underneath as the fallback. The legacy Arctic Custom / Signal treatments
   (any [data-theme] ancestor) skip the solar layer and keep their own
   background-image rules below.
 */
@@ -205,19 +203,10 @@
 }
 
 .app-backdrop:not([data-theme] .app-backdrop) {
-  background-image:
-    linear-gradient(
-      color-mix(in srgb, var(--background) var(--solar-scrim, 94%), transparent),
-      color-mix(in srgb, var(--background) var(--solar-scrim, 94%), transparent)
-    ),
-    url("/backgrounds/solar-array.svg");
+  background-image: url("/backgrounds/solar-array.svg");
   background-size: cover;
   background-position: 25% 50%;
   background-repeat: no-repeat;
-}
-
-.dark .app-backdrop {
-  --solar-scrim: 44%;
 }
 
 .glass {
