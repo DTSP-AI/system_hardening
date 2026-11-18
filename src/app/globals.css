@@ -684,3 +684,20 @@
 .crm-sidebar-brand { padding: 22px 18px 20px; min-height: 92px; }
 .crm-sidebar-wordmark { font-size: 32px; letter-spacing: .055em; }
 .crm-sidebar-brand .crm-sidebar-wordmark small { font-size: 7.5px; letter-spacing: .065em; }
+
+/* A quieter navy field keeps the CRM's data in focus. */
+.crm-main {
+  background-color: #071427;
+  background-image:
+    radial-gradient(circle at 12% 16%, rgba(189, 229, 255, .46) 0 1px, transparent 1.8px),
+    radial-gradient(circle at 83% 25%, rgba(150, 216, 247, .35) 0 .8px, transparent 1.6px),
+    radial-gradient(circle at 90% 82%, rgba(189, 229, 255, .33) 0 1px, transparent 1.8px),
+    linear-gradient(135deg, transparent 49.7%, rgba(24, 174, 220, .18) 50%, transparent 50.3%),
+    linear-gradient(45deg, transparent 49.7%, rgba(24, 174, 220, .12) 50%, transparent 50.3%),
+    radial-gradient(ellipse at 95% 5%, rgba(0, 172, 212, .13), transparent 35%),
+    radial-gradient(ellipse at 0% 100%, rgba(11, 99, 157, .12), transparent 32%),
+    linear-gradient(135deg, #08192d, #061120 55%, #071729);
+  background-size: auto, auto, auto, 390px 260px, 420px 280px, auto, auto, auto;
+  background-position: center, center, center, right top, left bottom, center, center, center;
+  background-repeat: no-repeat;
+}
