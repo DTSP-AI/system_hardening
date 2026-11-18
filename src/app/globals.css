@@ -550,3 +550,8 @@
   .signin-brand-panel { min-height: 0; padding-bottom: 10px; }
   .signin-form-panel { padding-top: 30px; }
 }
+
+/* Keep Clerk's sign-in form centered within the white card at every width. */
+.signin-form-wrap .cl-rootBox { width: 100%; display: flex; justify-content: center; }
+.signin-form-wrap .cl-cardBox { width: 100%; max-width: 100%; margin-inline: auto; background: transparent; box-shadow: none; }
+.signin-form-wrap .cl-card { width: 100%; max-width: 100%; margin: 0; padding: 0; background: transparent; box-shadow: none; }
