@@ -634,3 +634,16 @@
 
 .signin-message .signin-headline-main span { color: #08b7e8; }
 .signin-message > p { margin-top: 16px; }
+
+/* Match the YBRYX hub's midnight field and fine circuit geometry. */
+.signin-circuit::before {
+  background-image:
+    linear-gradient(135deg, transparent 49.8%, rgba(7, 135, 255, .22) 50%, transparent 50.4%),
+    linear-gradient(45deg, transparent 49.8%, rgba(7, 135, 255, .14) 50%, transparent 50.4%),
+    linear-gradient(100deg, rgba(0, 4, 10, .57), rgba(0, 5, 14, .25) 55%, rgba(0, 4, 10, .38));
+  background-size: 470px 300px, 640px 460px, auto;
+  background-position: 40% -130px, 78% 120px, center;
+}
+.signin-form-wrap { border: 1px solid rgba(181, 220, 245, .75); box-shadow: 0 24px 72px rgba(0, 0, 0, .4), 0 0 0 1px rgba(8, 183, 232, .12); }
+/* The surrounding card provides the welcome title; suppress Clerk's duplicate header. */
+.signin-form-wrap .cl-header { display: none !important; }
