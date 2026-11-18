@@ -5,7 +5,10 @@ const isPublicRoute = createRouteMatcher([
   "/sign-up(.*)",
   // Twilio's own server-to-server callbacks -- no Clerk session present,
   // authenticated instead via X-Twilio-Signature (readValidatedTwilioForm).
-  "/api/twilio/voice(.*)",
+  "/api/twilio/voice",
+  "/api/twilio/voice/status",
+  "/api/twilio/voice/recording",
+  "/api/twilio/voice/announce",
 ]);
 
 export default clerkMiddleware(async (auth, req) => {
