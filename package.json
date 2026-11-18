@@ -13,6 +13,7 @@
     "test": "tsx --test tests/*.test.ts",
     "user:add": "tsx scripts/add-user.ts",
     "seed:demo": "tsx scripts/seed-demo.ts",
+    "seed:priorities": "tsx scripts/seed-priorities.ts",
     "postinstall": "prisma generate"
   },
   "dependencies": {
