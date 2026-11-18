@@ -490,3 +490,27 @@
 .signin-icon { color:#08b7e8; background:#082b42; border-radius:3px; }
 .signin-form-panel { background:radial-gradient(ellipse at 70% 20%,#0c1929,#050b13 70%); color:#f0f4f9; }
 .signin-heading p { color:#a9bed5; }
+
+/* Flowing particle wave, shaded to the YBRYX black and electric-blue palette. */
+.signin-circuit::before {
+  opacity: .7;
+  background: linear-gradient(180deg, #020408 0%, rgba(2, 6, 13, .55) 37%, rgba(2, 7, 16, .22) 75%, rgba(2, 5, 10, .55) 100%), url('/images/signin-particle-wave.jpg') center 64% / cover no-repeat;
+  filter: saturate(.8) hue-rotate(-12deg);
+}
+.signin-circuit::after { display: none; }
+.signin-stars { display: none; }
+
+/* Gentle drift gives the particle wave motion without distracting from sign-in. */
+.signin-circuit::before {
+  inset: -5%;
+  animation: signin-wave-drift 22s ease-in-out infinite alternate;
+  will-change: transform;
+}
+@keyframes signin-wave-drift {
+  0% { transform: translate3d(-1%, 1%, 0) scale(1.04); }
+  50% { transform: translate3d(1%, -1%, 0) scale(1.07); }
+  100% { transform: translate3d(-.5%, .5%, 0) scale(1.04); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .signin-circuit::before { animation: none; will-change: auto; }
+}
