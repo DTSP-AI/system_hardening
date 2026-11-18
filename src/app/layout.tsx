@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "YBRYX CRM",
+  title: "YBRYX BOS",
   description: "YBRYX internal CRM",
 };
 
