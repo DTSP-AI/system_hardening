@@ -8,14 +8,6 @@ export function isInsuranceOrgSlug(orgSlug: string | null | undefined): boolean 
   return orgSlug?.startsWith(INSURANCE_ORG_SLUG_PREFIX) ?? false;
 }
 
-// Solar features (Projects, Vendors, Commissions, Service Tickets) are
-// specific to the Haven Home Solutions tenant.
-const SOLAR_ORG_SLUG_PREFIX = "haven-home-solutions";
-
-export function isSolarOrgSlug(orgSlug: string | null | undefined): boolean {
-  return orgSlug?.startsWith(SOLAR_ORG_SLUG_PREFIX) ?? false;
-}
-
 // The "Signal" theme (real YBRYX brand photo backdrop, animated circuit-trace
 // light nodes, deep-navy glass cards) is exclusive to the internal YBRYX
 // COMMAND workspace. Every other tenant keeps the default Arctic Custom theme.

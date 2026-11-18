@@ -18,10 +18,6 @@ import { carrierRouter } from "@/server/api/routers/carrier";
 import { policyRouter } from "@/server/api/routers/policy";
 import { commissionRouter } from "@/server/api/routers/commission";
 import { claimRouter } from "@/server/api/routers/claim";
-import { vendorRouter } from "@/server/api/routers/vendor";
-import { projectRouter } from "@/server/api/routers/project";
-import { projectCommissionRouter } from "@/server/api/routers/projectCommission";
-import { serviceTicketRouter } from "@/server/api/routers/serviceTicket";
 import { attachmentRouter } from "@/server/api/routers/attachment";
 import { auditLogRouter } from "@/server/api/routers/auditLog";
 import { coachingRouter } from "@/server/api/routers/coaching";
@@ -48,10 +44,6 @@ export const appRouter = createTRPCRouter({
   policy: policyRouter,
   commission: commissionRouter,
   claim: claimRouter,
-  vendor: vendorRouter,
-  project: projectRouter,
-  projectCommission: projectCommissionRouter,
-  serviceTicket: serviceTicketRouter,
   attachment: attachmentRouter,
   auditLog: auditLogRouter,
   coaching: coachingRouter,
