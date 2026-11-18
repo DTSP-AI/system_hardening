@@ -2,7 +2,7 @@ import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/db";
-import { requireRole } from "@/lib/rbac";
+import { resolveAppUser } from "@/lib/auth/app-user";
 
 export async function createTRPCContext() {
   const { userId } = await auth();
@@ -27,23 +27,35 @@ export const protectedProcedure = t.procedure.use(({ ctx, next }) => {
 });
 
 /**
- * Bridge procedure (single-tenant). The name is kept so existing routers keep
- * working; there is no tenant or org resolution any more. Requires a signed-in
- * user and runs the rest of the request inside one Prisma interactive
- * transaction, exposed as `ctx.db`. Procedures must use `ctx.db`, never the
- * bare `ctx.prisma`. Phase 5 replaces this with authedProcedure/adminProcedure
- * and links Users to Clerk sign-ins.
+ * Requires a signed-in Clerk user that resolves to an allowlisted, active
+ * app User (see resolveAppUser). Resolution runs outside the transaction on
+ * the bare client; the rest of the request then runs inside one Prisma
+ * interactive transaction, exposed as `ctx.db`. Procedures must use `ctx.db`,
+ * never the bare `ctx.prisma`. `ctx.userId` stays the Clerk user id;
+ * `ctx.user` is the app User row.
  */
-export const tenantProcedure = protectedProcedure.use(({ ctx, next }) =>
-  ctx.prisma.$transaction((tx) => next({ ctx: { ...ctx, db: tx } })),
-);
+export const authedProcedure = protectedProcedure.use(async ({ ctx, next }) => {
+  const resolved = await resolveAppUser(ctx.userId);
+  if (resolved.status === "unavailable") {
+    throw new TRPCError({
+      code: "SERVICE_UNAVAILABLE",
+      message: "Account verification unavailable",
+    });
+  }
+  if (resolved.status !== "ok") {
+    throw new TRPCError({ code: "FORBIDDEN", message: "Account not authorized" });
+  }
+  const user = resolved.user;
+  return ctx.prisma.$transaction((tx) => next({ ctx: { ...ctx, user, db: tx } }));
+});
 
-/**
- * Bridge: same as tenantProcedure, plus requires an ADMIN or OWNER User role.
- * Fails closed (FORBIDDEN) while no User row is linked to the Clerk user.
- * Phase 5 replaces this with the final adminProcedure.
- */
-export const adminProcedure = tenantProcedure.use(async ({ ctx, next }) => {
-  await requireRole(ctx.db, ctx.userId, ["OWNER", "ADMIN"]);
+/** authedProcedure, plus requires an OWNER or ADMIN role. No extra DB call. */
+export const adminProcedure = authedProcedure.use(({ ctx, next }) => {
+  if (ctx.user.role !== "OWNER" && ctx.user.role !== "ADMIN") {
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: "You don't have permission to do this.",
+    });
+  }
   return next({ ctx });
 });

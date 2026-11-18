@@ -1,14 +1,14 @@
 import { z } from "zod";
-import { createTRPCRouter, tenantProcedure, adminProcedure } from "@/server/api/trpc";
+import { createTRPCRouter, authedProcedure, adminProcedure } from "@/server/api/trpc";
 
 const ENTITY_TYPES = ["CONTACT", "COMPANY", "DEAL", "LEAD"] as const;
 
 export const tagRouter = createTRPCRouter({
-  list: tenantProcedure.query(({ ctx }) =>
+  list: authedProcedure.query(({ ctx }) =>
     ctx.db.tag.findMany({ orderBy: { name: "asc" } }),
   ),
 
-  create: tenantProcedure
+  create: authedProcedure
     .input(z.object({ name: z.string().min(1), color: z.string().min(1) }))
     .mutation(({ ctx, input }) =>
       ctx.db.tag.create({ data: { ...input } }),
@@ -18,7 +18,7 @@ export const tagRouter = createTRPCRouter({
     .input(z.object({ id: z.string() }))
     .mutation(({ ctx, input }) => ctx.db.tag.delete({ where: { id: input.id } })),
 
-  forEntity: tenantProcedure
+  forEntity: authedProcedure
     .input(z.object({ entityType: z.enum(ENTITY_TYPES), entityId: z.string() }))
     .query(({ ctx, input }) =>
       ctx.db.tagAssignment.findMany({
@@ -27,7 +27,7 @@ export const tagRouter = createTRPCRouter({
       }),
     ),
 
-  assign: tenantProcedure
+  assign: authedProcedure
     .input(
       z.object({
         tagId: z.string(),
@@ -37,11 +37,11 @@ export const tagRouter = createTRPCRouter({
     )
     .mutation(({ ctx, input }) => ctx.db.tagAssignment.create({ data: { ...input } })),
 
-  unassign: tenantProcedure
+  unassign: authedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(({ ctx, input }) => ctx.db.tagAssignment.delete({ where: { id: input.id } })),
 
-  assignMany: tenantProcedure
+  assignMany: authedProcedure
     .input(
       z.object({
         tagId: z.string(),

@@ -1,9 +1,9 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
-import { createTRPCRouter, tenantProcedure, adminProcedure } from "@/server/api/trpc";
+import { createTRPCRouter, authedProcedure, adminProcedure } from "@/server/api/trpc";
 
 export const pipelineStageRouter = createTRPCRouter({
-  list: tenantProcedure.query(({ ctx }) =>
+  list: authedProcedure.query(({ ctx }) =>
     ctx.db.pipelineStage.findMany({ orderBy: { sortOrder: "asc" } }),
   ),
 

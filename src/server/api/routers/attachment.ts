@@ -1,11 +1,11 @@
+import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { createTRPCRouter, tenantProcedure } from "@/server/api/trpc";
-import { requireRole } from "@/lib/rbac";
+import { createTRPCRouter, authedProcedure } from "@/server/api/trpc";
 
 const ENTITY_TYPES = ["CONTACT", "COMPANY", "DEAL", "LEAD"] as const;
 
 export const attachmentRouter = createTRPCRouter({
-  forEntity: tenantProcedure
+  forEntity: authedProcedure
     .input(z.object({ entityType: z.enum(ENTITY_TYPES), entityId: z.string() }))
     .query(({ ctx, input }) =>
       ctx.db.attachment.findMany({
@@ -14,7 +14,7 @@ export const attachmentRouter = createTRPCRouter({
       }),
     ),
 
-  create: tenantProcedure
+  create: authedProcedure
     .input(
       z.object({
         entityType: z.enum(ENTITY_TYPES),
@@ -31,12 +31,19 @@ export const attachmentRouter = createTRPCRouter({
       }),
     ),
 
-  delete: tenantProcedure
+  delete: authedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const attachment = await ctx.db.attachment.findUniqueOrThrow({ where: { id: input.id } });
-      if (attachment.uploadedById !== ctx.userId) {
-        await requireRole(ctx.db, ctx.userId, ["OWNER", "ADMIN"]);
+      if (
+        attachment.uploadedById !== ctx.userId &&
+        ctx.user.role !== "OWNER" &&
+        ctx.user.role !== "ADMIN"
+      ) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "You don't have permission to do this.",
+        });
       }
       return ctx.db.attachment.delete({ where: { id: input.id } });
     }),

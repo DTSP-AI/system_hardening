@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { createTRPCRouter, tenantProcedure, adminProcedure } from "@/server/api/trpc";
+import { createTRPCRouter, authedProcedure, adminProcedure } from "@/server/api/trpc";
 import { logAudit, toJsonSafe } from "@/lib/audit";
 
 const companyInput = z.object({
@@ -16,13 +16,13 @@ const companyInput = z.object({
 });
 
 export const companyRouter = createTRPCRouter({
-  list: tenantProcedure.query(({ ctx }) =>
+  list: authedProcedure.query(({ ctx }) =>
     ctx.db.company.findMany({
       orderBy: { createdAt: "desc" },
     }),
   ),
 
-  byId: tenantProcedure.input(z.object({ id: z.string() })).query(({ ctx, input }) =>
+  byId: authedProcedure.input(z.object({ id: z.string() })).query(({ ctx, input }) =>
     ctx.db.company.findUniqueOrThrow({
       where: { id: input.id },
       include: {
@@ -32,13 +32,13 @@ export const companyRouter = createTRPCRouter({
     }),
   ),
 
-  create: tenantProcedure
+  create: authedProcedure
     .input(companyInput)
     .mutation(({ ctx, input }) =>
       ctx.db.company.create({ data: { ...input } }),
     ),
 
-  update: tenantProcedure
+  update: authedProcedure
     .input(companyInput.partial().extend({ id: z.string() }))
     .mutation(({ ctx, input }) => {
       const { id, ...data } = input;

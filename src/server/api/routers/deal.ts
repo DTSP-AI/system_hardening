@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { createTRPCRouter, tenantProcedure, adminProcedure } from "@/server/api/trpc";
+import { createTRPCRouter, authedProcedure, adminProcedure } from "@/server/api/trpc";
 import { notify } from "@/lib/notify";
 import { logAudit, toJsonSafe } from "@/lib/audit";
 
@@ -21,14 +21,14 @@ const dealInput = z.object({
 });
 
 export const dealRouter = createTRPCRouter({
-  list: tenantProcedure.query(({ ctx }) =>
+  list: authedProcedure.query(({ ctx }) =>
     ctx.db.deal.findMany({
       include: { stage: true, contact: true, company: true },
       orderBy: { createdAt: "desc" },
     }),
   ),
 
-  byId: tenantProcedure.input(z.object({ id: z.string() })).query(({ ctx, input }) =>
+  byId: authedProcedure.input(z.object({ id: z.string() })).query(({ ctx, input }) =>
     ctx.db.deal.findUniqueOrThrow({
       where: { id: input.id },
       include: {
@@ -40,20 +40,20 @@ export const dealRouter = createTRPCRouter({
     }),
   ),
 
-  create: tenantProcedure
+  create: authedProcedure
     .input(dealInput)
     .mutation(({ ctx, input }) =>
       ctx.db.deal.create({ data: { ...input } }),
     ),
 
-  update: tenantProcedure
+  update: authedProcedure
     .input(dealInput.partial().extend({ id: z.string() }))
     .mutation(({ ctx, input }) => {
       const { id, ...data } = input;
       return ctx.db.deal.update({ where: { id }, data });
     }),
 
-  moveStage: tenantProcedure
+  moveStage: authedProcedure
     .input(z.object({ id: z.string(), stageId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const stage = await ctx.db.pipelineStage.findUniqueOrThrow({
@@ -111,7 +111,7 @@ export const dealRouter = createTRPCRouter({
       return result;
     }),
 
-  moveStageMany: tenantProcedure
+  moveStageMany: authedProcedure
     .input(z.object({ ids: z.array(z.string()).min(1), stageId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const stage = await ctx.db.pipelineStage.findUniqueOrThrow({

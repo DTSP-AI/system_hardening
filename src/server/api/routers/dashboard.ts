@@ -1,4 +1,4 @@
-import { createTRPCRouter, tenantProcedure } from "@/server/api/trpc";
+import { createTRPCRouter, authedProcedure } from "@/server/api/trpc";
 
 const STALE_MS = 14 * 24 * 60 * 60 * 1000;
 const CONNECTED_STATUSES = new Set(["completed", "in-progress"]);
@@ -6,7 +6,7 @@ const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 const PIPELINE_WEEKS = 8;
 
 export const dashboardRouter = createTRPCRouter({
-  summary: tenantProcedure.query(async ({ ctx }) => {
+  summary: authedProcedure.query(async ({ ctx }) => {
     const now = new Date();
     const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const sevenDaysAgo = new Date(now.getTime() - WEEK_MS);
@@ -41,7 +41,7 @@ export const dashboardRouter = createTRPCRouter({
     };
   }),
 
-  pipelineWeekly: tenantProcedure.query(async ({ ctx }) => {
+  pipelineWeekly: authedProcedure.query(async ({ ctx }) => {
     const now = new Date();
     const start = new Date(now.getTime() - PIPELINE_WEEKS * WEEK_MS);
 
@@ -69,7 +69,7 @@ export const dashboardRouter = createTRPCRouter({
     }));
   }),
 
-  recentActivity: tenantProcedure.query(({ ctx }) =>
+  recentActivity: authedProcedure.query(({ ctx }) =>
     ctx.db.activity.findMany({
       orderBy: { createdAt: "desc" },
       take: 8,

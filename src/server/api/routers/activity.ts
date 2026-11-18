@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { createTRPCRouter, tenantProcedure } from "@/server/api/trpc";
+import { createTRPCRouter, authedProcedure } from "@/server/api/trpc";
 
 const activityInput = z.object({
   type: z.enum(["NOTE", "TASK", "CALL", "EMAIL", "MEETING"]),
@@ -10,7 +10,7 @@ const activityInput = z.object({
 });
 
 export const activityRouter = createTRPCRouter({
-  upcoming: tenantProcedure.query(({ ctx }) =>
+  upcoming: authedProcedure.query(({ ctx }) =>
     ctx.db.activity.findMany({
       where: {
         authorId: ctx.userId,
@@ -27,7 +27,7 @@ export const activityRouter = createTRPCRouter({
     }),
   ),
 
-  myTasks: tenantProcedure.query(({ ctx }) =>
+  myTasks: authedProcedure.query(({ ctx }) =>
     ctx.db.activity.findMany({
       where: { authorId: ctx.userId, type: "TASK" },
       orderBy: [{ completedAt: "desc" }, { dueDate: "asc" }],
@@ -38,7 +38,7 @@ export const activityRouter = createTRPCRouter({
     }),
   ),
 
-  notifications: tenantProcedure.query(async ({ ctx }) => {
+  notifications: authedProcedure.query(async ({ ctx }) => {
     const [calls, emails] = await Promise.all([
       ctx.db.activity.findMany({
         where: { authorId: ctx.userId, type: "CALL" },
@@ -65,7 +65,7 @@ export const activityRouter = createTRPCRouter({
     return { missedCalls, emails };
   }),
 
-  create: tenantProcedure
+  create: authedProcedure
     .input(activityInput)
     .mutation(({ ctx, input }) =>
       ctx.db.activity.create({
@@ -73,7 +73,7 @@ export const activityRouter = createTRPCRouter({
       }),
     ),
 
-  complete: tenantProcedure
+  complete: authedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(({ ctx, input }) =>
       ctx.db.activity.update({
@@ -82,7 +82,7 @@ export const activityRouter = createTRPCRouter({
       }),
     ),
 
-  delete: tenantProcedure
+  delete: authedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(({ ctx, input }) => ctx.db.activity.delete({ where: { id: input.id } })),
 });

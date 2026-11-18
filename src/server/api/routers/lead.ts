@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { createTRPCRouter, tenantProcedure, adminProcedure } from "@/server/api/trpc";
+import { createTRPCRouter, authedProcedure, adminProcedure } from "@/server/api/trpc";
 import { notify } from "@/lib/notify";
 import { logAudit, toJsonSafe } from "@/lib/audit";
 
@@ -16,26 +16,26 @@ const leadInput = z.object({
 const LEAD_STATUSES = ["NEW", "CONTACTED", "QUALIFIED", "UNQUALIFIED", "CONVERTED"] as const;
 
 export const leadRouter = createTRPCRouter({
-  list: tenantProcedure.query(({ ctx }) =>
+  list: authedProcedure.query(({ ctx }) =>
     ctx.db.lead.findMany({ orderBy: { createdAt: "desc" } }),
   ),
 
-  byId: tenantProcedure
+  byId: authedProcedure
     .input(z.object({ id: z.string() }))
     .query(({ ctx, input }) => ctx.db.lead.findUniqueOrThrow({ where: { id: input.id } })),
 
-  create: tenantProcedure
+  create: authedProcedure
     .input(leadInput)
     .mutation(({ ctx, input }) => ctx.db.lead.create({ data: { ...input } })),
 
-  update: tenantProcedure
+  update: authedProcedure
     .input(leadInput.partial().extend({ id: z.string() }))
     .mutation(({ ctx, input }) => {
       const { id, ...data } = input;
       return ctx.db.lead.update({ where: { id }, data });
     }),
 
-  setStatus: tenantProcedure
+  setStatus: authedProcedure
     .input(z.object({ id: z.string(), status: z.enum(LEAD_STATUSES) }))
     .mutation(({ ctx, input }) =>
       ctx.db.lead.update({ where: { id: input.id }, data: { status: input.status } }),
@@ -80,7 +80,7 @@ export const leadRouter = createTRPCRouter({
       }),
     ),
 
-  convert: tenantProcedure
+  convert: authedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const lead = await ctx.db.lead.findUniqueOrThrow({ where: { id: input.id } });

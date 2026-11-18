@@ -1,10 +1,10 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
-import { createTRPCRouter, tenantProcedure } from "@/server/api/trpc";
+import { createTRPCRouter, authedProcedure } from "@/server/api/trpc";
 import { sendEmail } from "@/lib/email";
 
 export const emailRouter = createTRPCRouter({
-  send: tenantProcedure
+  send: authedProcedure
     .input(z.object({ contactId: z.string(), subject: z.string().min(1), body: z.string().min(1) }))
     .mutation(async ({ ctx, input }) => {
       const contact = await ctx.db.contact.findUniqueOrThrow({ where: { id: input.contactId } });

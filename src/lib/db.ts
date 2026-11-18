@@ -19,5 +19,5 @@ if (process.env.NODE_ENV !== "production") {
   globalForPrisma.prisma = prisma;
 }
 
-/** The `tx` client tRPC's `tenantProcedure` bridge hands out as `ctx.db` (see trpc.ts). */
+/** The `tx` client tRPC's `authedProcedure` hands out as `ctx.db` (see trpc.ts). */
 export type DbTx = Prisma.TransactionClient;

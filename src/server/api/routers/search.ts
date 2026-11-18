@@ -1,8 +1,8 @@
 import { z } from "zod";
-import { createTRPCRouter, tenantProcedure } from "@/server/api/trpc";
+import { createTRPCRouter, authedProcedure } from "@/server/api/trpc";
 
 export const searchRouter = createTRPCRouter({
-  global: tenantProcedure
+  global: authedProcedure
     .input(z.object({ query: z.string().min(1) }))
     .query(async ({ ctx, input }) => {
       const q = input.query;

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { createTRPCRouter, tenantProcedure } from "@/server/api/trpc";
+import { createTRPCRouter, authedProcedure } from "@/server/api/trpc";
 
 const CATEGORIES = [
   "HVAC",
@@ -43,7 +43,7 @@ export const prospectingRouter = createTRPCRouter({
   // across re-renders of the same search. Swap for a real Google Places
   // (New) call once wired -- see src/server/places.ts in ybryx-grader for
   // the field-mask pattern to adapt.
-  search: tenantProcedure.input(prospectingInput).query(({ input }) => {
+  search: authedProcedure.input(prospectingInput).query(({ input }) => {
     const rand = seededRandom(`${input.location}|${input.industry}|${input.tier}`);
     const count = 15 + Math.floor(rand() * 6);
 

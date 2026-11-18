@@ -1,13 +1,13 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
-import { createTRPCRouter, tenantProcedure, adminProcedure } from "@/server/api/trpc";
+import { createTRPCRouter, authedProcedure, adminProcedure } from "@/server/api/trpc";
 import { logAudit, toJsonSafe } from "@/lib/audit";
 
 const entityTypeSchema = z.enum(["CONTACT", "COMPANY", "DEAL"]);
 const fieldTypeSchema = z.enum(["TEXT", "NUMBER", "DATE", "SELECT", "BOOLEAN"]);
 
 export const customFieldDefinitionRouter = createTRPCRouter({
-  list: tenantProcedure.query(({ ctx }) =>
+  list: authedProcedure.query(({ ctx }) =>
     ctx.db.customFieldDefinition.findMany({
       orderBy: [{ entityType: "asc" }, { sortOrder: "asc" }],
     }),
