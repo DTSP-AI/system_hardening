@@ -51,7 +51,10 @@ export function PipelineDonut({
     return <div className="py-10 text-center text-sm text-muted-foreground">No deals yet.</div>;
   }
 
-  let cumulative = 0;
+  const offsets = rows.reduce<number[]>((acc, r, i) => {
+    const prev = i === 0 ? 0 : acc[i - 1] + (r.total / grandTotal) * CIRCUMFERENCE;
+    return [...acc, prev];
+  }, []);
 
   return (
     <div className="flex flex-col items-center gap-5 sm:flex-row sm:items-center sm:justify-center">
@@ -68,8 +71,7 @@ export function PipelineDonut({
           const fraction = total / grandTotal;
           const segmentLength = fraction * CIRCUMFERENCE;
           const dashArray = `${Math.max(0, segmentLength - GAP_PX)} ${CIRCUMFERENCE - segmentLength + GAP_PX}`;
-          const dashOffset = -cumulative;
-          cumulative += segmentLength;
+          const dashOffset = -offsets[i];
           return (
             <circle
               key={stage.id}

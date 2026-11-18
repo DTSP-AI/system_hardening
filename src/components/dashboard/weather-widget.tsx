@@ -27,8 +27,8 @@ export function WeatherWidget() {
 
   useEffect(() => {
     if (!("geolocation" in navigator)) {
-      setState({ status: "error" });
-      return;
+      const t = setTimeout(() => setState({ status: "error" }), 0);
+      return () => clearTimeout(t);
     }
 
     navigator.geolocation.getCurrentPosition(

@@ -53,11 +53,16 @@ export function CoachPanel({ callSid, onClose }: { callSid: string; onClose: () 
   const reconnectDelayRef = useRef(1000);
   const closedByUsRef = useRef(false);
 
-  useEffect(() => {
-    closedByUsRef.current = false;
+  const [prevCallSid, setPrevCallSid] = useState(callSid);
+  if (prevCallSid !== callSid) {
+    setPrevCallSid(callSid);
     setTranscript([]);
     setTips([]);
     setInterimLine(null);
+  }
+
+  useEffect(() => {
+    closedByUsRef.current = false;
 
     let cancelled = false;
 

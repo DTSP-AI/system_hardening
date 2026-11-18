@@ -29,7 +29,8 @@ function DealCard({ deal }: { deal: Deal }) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: deal.id,
   });
-  const isStale = Date.now() - new Date(deal.updatedAt).getTime() > STALE_MS;
+  const [now] = useState(() => Date.now());
+  const isStale = now - new Date(deal.updatedAt).getTime() > STALE_MS;
 
   return (
     <div

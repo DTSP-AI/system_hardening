@@ -14,9 +14,13 @@ export function Greeting() {
   const [hour, setHour] = useState<number | null>(null);
 
   useEffect(() => {
-    setHour(new Date().getHours());
-    const id = setInterval(() => setHour(new Date().getHours()), 60_000);
-    return () => clearInterval(id);
+    const tick = () => setHour(new Date().getHours());
+    const first = setTimeout(tick, 0);
+    const id = setInterval(tick, 60_000);
+    return () => {
+      clearTimeout(first);
+      clearInterval(id);
+    };
   }, []);
 
   const greeting = hour === null ? "Welcome" : greetingForHour(hour);

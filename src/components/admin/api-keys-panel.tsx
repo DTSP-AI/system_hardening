@@ -60,7 +60,7 @@ export function ApiKeysPanel() {
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <p className="text-sm text-muted-foreground">
-          Keys authenticate external integrations against this workspace's API.
+          Keys authenticate external integrations against this workspace&apos;s API.
         </p>
         <Dialog open={open} onOpenChange={handleOpenChange}>
           <DialogTrigger asChild>

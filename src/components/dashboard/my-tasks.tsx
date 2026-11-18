@@ -27,7 +27,7 @@ export function MyTasks() {
         </div>
       ) : tasks.data?.length === 0 ? (
         <div className="p-10 text-center text-muted-foreground">
-          No tasks — add one from a contact or deal's activity timeline.
+          No tasks — add one from a contact or deal&apos;s activity timeline.
         </div>
       ) : (
         <div className="flex flex-col divide-y divide-border">

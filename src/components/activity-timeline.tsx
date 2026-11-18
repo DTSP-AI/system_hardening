@@ -23,7 +23,7 @@ type CallMetadata = {
   recordingDurationSeconds?: number;
 };
 
-type ActivityKind = "NOTE" | "TASK" | "CALL" | "EMAIL" | "MEETING";
+type ActivityKind = "NOTE" | "TASK" | "CALL" | "EMAIL" | "MEETING" | "TEXT";
 
 type Activity = {
   id: string;
