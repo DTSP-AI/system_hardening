@@ -752,3 +752,37 @@
 .production-record:hover { border-color: #62c6e5; }
 @media (max-width: 1250px) { .production-chart-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .production-chart-grid > :first-child { grid-column: 1 / -1; } }
 @media (max-width: 760px) { .production-chart-grid { grid-template-columns: 1fr; } .production-chart-grid > :first-child { grid-column: auto; } }
+
+/* Shared YBRYX product chrome: dark framing, quiet cards, crisp cyan accents. */
+.crm-topbar {
+  --foreground: #eaf5fc;
+  --muted-foreground: #a5bfd0;
+  --border: rgba(130, 192, 222, .2);
+  color: var(--foreground);
+  background: linear-gradient(110deg, #06101d, #0a2034 70%, #081725);
+  border-bottom: 1px solid rgba(71, 181, 224, .18);
+}
+.crm-topbar .crm-search { background: rgba(255, 255, 255, .055); color: #b9cedd; border-color: rgba(151, 198, 223, .22); }
+.crm-topbar .crm-search:hover { background: rgba(255, 255, 255, .09); border-color: rgba(86, 204, 237, .5); }
+.crm-topbar [data-variant="ghost"] { color: #dcecf6; }
+.crm-topbar [data-variant="ghost"]:hover { color: #fff; background: rgba(91, 202, 237, .16); }
+.crm-main { --chart-1: #078fbe; }
+.crm-main :is([data-slot="card"], .dashboard-panel, .kpi-card, .dashboard-more) {
+  border-radius: 12px;
+  border-color: rgba(24, 77, 112, .14);
+  box-shadow: 0 3px 14px rgba(11, 42, 69, .055);
+}
+.dark .crm-main :is([data-slot="card"], .dashboard-panel, .kpi-card, .dashboard-more) { border-color: rgba(124, 187, 219, .18); box-shadow: 0 5px 18px rgba(0, 0, 0, .15); }
+.crm-main h1 { letter-spacing: -.035em; }
+.crm-main :is([data-slot="card-title"], .dashboard-panel-heading h2) { font-weight: 650; letter-spacing: -.012em; }
+.crm-main :is(.dashboard-action, [data-slot="button"][data-variant="default"]) {
+  color: #fff;
+  background: linear-gradient(105deg, #0879bd, #079fc8);
+  border-color: transparent;
+  box-shadow: 0 3px 10px rgba(7, 127, 180, .18);
+}
+.crm-main :is(.dashboard-action, [data-slot="button"][data-variant="default"]):hover { background: linear-gradient(105deg, #08649d, #0788ad); }
+.crm-main :is(.dashboard-action, [data-slot="button"][data-variant="default"]):focus-visible { outline: 2px solid #28bfe2; outline-offset: 3px; }
+.crm-main :is(.panel-title-icon, .kpi-icon) { color: #087fae; background: #e1f5fb; }
+.dark .crm-main :is(.panel-title-icon, .kpi-icon) { color: #83daf0; background: #153e53; }
+.production-record:hover, .dashboard-panel-heading > a:hover { color: #087fae; }
