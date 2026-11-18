@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { zId, zName } from "@/lib/validation";
 import { TRPCError } from "@trpc/server";
 import { createTRPCRouter, authedProcedure, adminProcedure } from "@/server/api/trpc";
 import { logAudit, toJsonSafe } from "@/lib/audit";
@@ -20,10 +21,11 @@ export const customFieldDefinitionRouter = createTRPCRouter({
         key: z
           .string()
           .min(1)
+          .max(64)
           .regex(/^[a-z][a-zA-Z0-9_]*$/, "Use camelCase, starting with a lowercase letter"),
-        label: z.string().min(1),
+        label: zName,
         fieldType: fieldTypeSchema,
-        options: z.array(z.string()).default([]),
+        options: z.array(z.string().min(1).max(200)).max(100).default([]),
         required: z.boolean().default(false),
       }),
     )
@@ -58,9 +60,9 @@ export const customFieldDefinitionRouter = createTRPCRouter({
   update: adminProcedure
     .input(
       z.object({
-        id: z.string(),
-        label: z.string().min(1).optional(),
-        options: z.array(z.string()).optional(),
+        id: zId,
+        label: zName.optional(),
+        options: z.array(z.string().min(1).max(200)).max(100).optional(),
         required: z.boolean().optional(),
       }),
     )
@@ -78,7 +80,7 @@ export const customFieldDefinitionRouter = createTRPCRouter({
     }),
 
   delete: adminProcedure
-    .input(z.object({ id: z.string() }))
+    .input(z.object({ id: zId }))
     .mutation(async ({ ctx, input }) => {
       const deleted = await ctx.db.customFieldDefinition.delete({ where: { id: input.id } });
       await logAudit(ctx.db, {

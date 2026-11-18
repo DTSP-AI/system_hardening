@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { zId } from "@/lib/validation";
 import { createTRPCRouter, authedProcedure } from "@/server/api/trpc";
 
 export const notificationRouter = createTRPCRouter({
@@ -15,7 +16,7 @@ export const notificationRouter = createTRPCRouter({
   ),
 
   markRead: authedProcedure
-    .input(z.object({ id: z.string() }))
+    .input(z.object({ id: zId }))
     .mutation(({ ctx, input }) =>
       ctx.db.notification.update({ where: { id: input.id }, data: { readAt: new Date() } }),
     ),

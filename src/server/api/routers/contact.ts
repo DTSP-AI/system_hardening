@@ -1,25 +1,26 @@
 import { z } from "zod";
+import { zId, zName, zShort, zEmail, zPhone, zIdArray, zCustomFields, zImportRows } from "@/lib/validation";
 import { createTRPCRouter, authedProcedure, adminProcedure } from "@/server/api/trpc";
 import { logAudit, toJsonSafe } from "@/lib/audit";
 
 const CONTACT_TYPES = ["CUSTOMER", "VENDOR", "PARTNER"] as const;
 
 const contactInput = z.object({
-  firstName: z.string().min(1),
-  lastName: z.string().min(1),
-  email: z.email().optional(),
-  phone: z.string().optional(),
-  jobTitle: z.string().optional(),
-  companyId: z.string().optional(),
-  leadSource: z.string().optional(),
-  addressLine1: z.string().optional(),
-  addressLine2: z.string().optional(),
-  city: z.string().optional(),
-  state: z.string().optional(),
-  postalCode: z.string().optional(),
-  country: z.string().optional(),
+  firstName: zName,
+  lastName: zName,
+  email: zEmail.optional(),
+  phone: zPhone.optional(),
+  jobTitle: zShort.optional(),
+  companyId: zId.optional(),
+  leadSource: zShort.optional(),
+  addressLine1: zShort.optional(),
+  addressLine2: zShort.optional(),
+  city: zShort.optional(),
+  state: zShort.optional(),
+  postalCode: zShort.optional(),
+  country: zShort.optional(),
   type: z.enum(CONTACT_TYPES).optional(),
-  customFields: z.record(z.string(), z.any()).optional(),
+  customFields: zCustomFields.optional(),
 });
 
 export const contactRouter = createTRPCRouter({
@@ -30,7 +31,7 @@ export const contactRouter = createTRPCRouter({
     }),
   ),
 
-  byId: authedProcedure.input(z.object({ id: z.string() })).query(({ ctx, input }) =>
+  byId: authedProcedure.input(z.object({ id: zId })).query(({ ctx, input }) =>
     ctx.db.contact.findUniqueOrThrow({
       where: { id: input.id },
       include: {
@@ -48,14 +49,14 @@ export const contactRouter = createTRPCRouter({
     ),
 
   update: authedProcedure
-    .input(contactInput.partial().extend({ id: z.string() }))
+    .input(contactInput.partial().extend({ id: zId }))
     .mutation(({ ctx, input }) => {
       const { id, ...data } = input;
       return ctx.db.contact.update({ where: { id }, data });
     }),
 
   delete: adminProcedure
-    .input(z.object({ id: z.string() }))
+    .input(z.object({ id: zId }))
     .mutation(async ({ ctx, input }) => {
       const deleted = await ctx.db.contact.delete({ where: { id: input.id } });
       await logAudit(ctx.db, {
@@ -69,7 +70,7 @@ export const contactRouter = createTRPCRouter({
     }),
 
   deleteMany: adminProcedure
-    .input(z.object({ ids: z.array(z.string()).min(1) }))
+    .input(z.object({ ids: zIdArray }))
     .mutation(async ({ ctx, input }) => {
       const rows = await ctx.db.contact.findMany({ where: { id: { in: input.ids } } });
       const result = await ctx.db.contact.deleteMany({ where: { id: { in: input.ids } } });
@@ -86,7 +87,7 @@ export const contactRouter = createTRPCRouter({
     }),
 
   bulkCreate: adminProcedure
-    .input(z.object({ rows: z.array(contactInput) }))
+    .input(z.object({ rows: zImportRows(contactInput) }))
     .mutation(({ ctx, input }) =>
       ctx.db.contact.createMany({
         data: input.rows.map((row) => ({ ...row })),

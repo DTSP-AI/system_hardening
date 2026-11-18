@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { zName } from "@/lib/validation";
 import { createTRPCRouter, authedProcedure } from "@/server/api/trpc";
 
 const CATEGORIES = [
@@ -32,8 +33,8 @@ function pick<T>(rand: () => number, arr: readonly T[]): T {
 }
 
 const prospectingInput = z.object({
-  location: z.string().min(1),
-  industry: z.string().min(1),
+  location: zName,
+  industry: zName,
   radiusMiles: z.number().min(1).max(100).default(25),
   tier: z.enum(["basic", "premium"]).default("basic"),
 });

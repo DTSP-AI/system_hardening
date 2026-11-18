@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { zId, zName, zIdArray } from "@/lib/validation";
 import { createTRPCRouter, authedProcedure, adminProcedure } from "@/server/api/trpc";
 
 const ENTITY_TYPES = ["CONTACT", "COMPANY", "DEAL", "LEAD"] as const;
@@ -9,17 +10,20 @@ export const tagRouter = createTRPCRouter({
   ),
 
   create: authedProcedure
-    .input(z.object({ name: z.string().min(1), color: z.string().min(1) }))
+    .input(z.object({
+        name: zName,
+        color: z.string().max(32).regex(/^(var\(--viz-[a-z]+\)|#[0-9a-fA-F]{6})$/),
+      }))
     .mutation(({ ctx, input }) =>
       ctx.db.tag.create({ data: { ...input } }),
     ),
 
   delete: adminProcedure
-    .input(z.object({ id: z.string() }))
+    .input(z.object({ id: zId }))
     .mutation(({ ctx, input }) => ctx.db.tag.delete({ where: { id: input.id } })),
 
   forEntity: authedProcedure
-    .input(z.object({ entityType: z.enum(ENTITY_TYPES), entityId: z.string() }))
+    .input(z.object({ entityType: z.enum(ENTITY_TYPES), entityId: zId }))
     .query(({ ctx, input }) =>
       ctx.db.tagAssignment.findMany({
         where: { entityType: input.entityType, entityId: input.entityId },
@@ -30,23 +34,23 @@ export const tagRouter = createTRPCRouter({
   assign: authedProcedure
     .input(
       z.object({
-        tagId: z.string(),
+        tagId: zId,
         entityType: z.enum(ENTITY_TYPES),
-        entityId: z.string(),
+        entityId: zId,
       }),
     )
     .mutation(({ ctx, input }) => ctx.db.tagAssignment.create({ data: { ...input } })),
 
   unassign: authedProcedure
-    .input(z.object({ id: z.string() }))
+    .input(z.object({ id: zId }))
     .mutation(({ ctx, input }) => ctx.db.tagAssignment.delete({ where: { id: input.id } })),
 
   assignMany: authedProcedure
     .input(
       z.object({
-        tagId: z.string(),
+        tagId: zId,
         entityType: z.enum(ENTITY_TYPES),
-        entityIds: z.array(z.string()).min(1),
+        entityIds: zIdArray,
       }),
     )
     .mutation(({ ctx, input }) =>

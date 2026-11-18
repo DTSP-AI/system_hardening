@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { zId, zName } from "@/lib/validation";
 import { randomBytes, createHash } from "crypto";
 import { createTRPCRouter, adminProcedure } from "@/server/api/trpc";
 
@@ -27,7 +28,7 @@ export const apiKeyRouter = createTRPCRouter({
   ),
 
   create: adminProcedure
-    .input(z.object({ name: z.string().min(1) }))
+    .input(z.object({ name: zName }))
     .mutation(async ({ ctx, input }) => {
       const key = generateKey();
       const apiKey = await ctx.db.apiKey.create({
@@ -42,7 +43,7 @@ export const apiKeyRouter = createTRPCRouter({
     }),
 
   revoke: adminProcedure
-    .input(z.object({ id: z.string() }))
+    .input(z.object({ id: zId }))
     .mutation(({ ctx, input }) =>
       ctx.db.apiKey.update({ where: { id: input.id }, data: { revokedAt: new Date() } }),
     ),

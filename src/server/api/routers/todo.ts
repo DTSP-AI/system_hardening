@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { zId } from "@/lib/validation";
 import { createTRPCRouter, authedProcedure } from "@/server/api/trpc";
 
 const quadrantSchema = z.enum(["URGENT_IMPORTANT", "SCHEDULE", "DELEGATE", "BACK_BURNER"]);
@@ -12,7 +13,7 @@ export const todoRouter = createTRPCRouter({
   ),
 
   create: authedProcedure
-    .input(z.object({ title: z.string().min(1), quadrant: quadrantSchema }))
+    .input(z.object({ title: z.string().min(1).max(500), quadrant: quadrantSchema }))
     .mutation(({ ctx, input }) =>
       ctx.db.todo.create({
         data: { ...input, authorId: ctx.userId },
@@ -20,18 +21,18 @@ export const todoRouter = createTRPCRouter({
     ),
 
   toggle: authedProcedure
-    .input(z.object({ id: z.string(), completed: z.boolean() }))
+    .input(z.object({ id: zId, completed: z.boolean() }))
     .mutation(({ ctx, input }) =>
       ctx.db.todo.update({ where: { id: input.id }, data: { completed: input.completed } }),
     ),
 
   move: authedProcedure
-    .input(z.object({ id: z.string(), quadrant: quadrantSchema }))
+    .input(z.object({ id: zId, quadrant: quadrantSchema }))
     .mutation(({ ctx, input }) =>
       ctx.db.todo.update({ where: { id: input.id }, data: { quadrant: input.quadrant } }),
     ),
 
   delete: authedProcedure
-    .input(z.object({ id: z.string() }))
+    .input(z.object({ id: zId }))
     .mutation(({ ctx, input }) => ctx.db.todo.delete({ where: { id: input.id } })),
 });

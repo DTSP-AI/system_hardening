@@ -3,7 +3,7 @@ import { createTRPCRouter, authedProcedure } from "@/server/api/trpc";
 
 export const searchRouter = createTRPCRouter({
   global: authedProcedure
-    .input(z.object({ query: z.string().min(1) }))
+    .input(z.object({ query: z.string().min(1).max(100) }))
     .query(async ({ ctx, input }) => {
       const q = input.query;
       const [contacts, companies, deals, leads] = await Promise.all([

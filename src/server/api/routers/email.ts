@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { zId } from "@/lib/validation";
 import { TRPCError } from "@trpc/server";
 import { createTRPCRouter, authedProcedure } from "@/server/api/trpc";
 import { EmailNotConfiguredError, EmailProviderError, getEmailConfig, sendEmail } from "@/lib/email";
@@ -9,7 +10,7 @@ export const emailRouter = createTRPCRouter({
   send: authedProcedure
     .input(
       z.object({
-        contactId: z.string().min(1).max(64),
+        contactId: zId,
         subject: z.string().min(1).max(200).regex(/^[^\r\n]*$/),
         body: z.string().min(1).max(10_000),
       }),

@@ -1,11 +1,12 @@
 import { z } from "zod";
+import { zId, zLong } from "@/lib/validation";
 import { createTRPCRouter, authedProcedure } from "@/server/api/trpc";
 
 const activityInput = z.object({
   type: z.enum(["NOTE", "TASK", "CALL", "EMAIL", "MEETING"]),
-  contactId: z.string().optional(),
-  dealId: z.string().optional(),
-  body: z.string().optional(),
+  contactId: zId.optional(),
+  dealId: zId.optional(),
+  body: zLong.optional(),
   dueDate: z.coerce.date().optional(),
 });
 
@@ -74,7 +75,7 @@ export const activityRouter = createTRPCRouter({
     ),
 
   complete: authedProcedure
-    .input(z.object({ id: z.string() }))
+    .input(z.object({ id: zId }))
     .mutation(({ ctx, input }) =>
       ctx.db.activity.update({
         where: { id: input.id },
@@ -83,6 +84,6 @@ export const activityRouter = createTRPCRouter({
     ),
 
   delete: authedProcedure
-    .input(z.object({ id: z.string() }))
+    .input(z.object({ id: zId }))
     .mutation(({ ctx, input }) => ctx.db.activity.delete({ where: { id: input.id } })),
 });

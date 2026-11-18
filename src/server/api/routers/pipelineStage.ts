@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { zId, zName } from "@/lib/validation";
 import { TRPCError } from "@trpc/server";
 import { createTRPCRouter, authedProcedure, adminProcedure } from "@/server/api/trpc";
 
@@ -8,7 +9,7 @@ export const pipelineStageRouter = createTRPCRouter({
   ),
 
   reorder: adminProcedure
-    .input(z.object({ id: z.string(), sortOrder: z.number().int() }))
+    .input(z.object({ id: zId, sortOrder: z.number().int().min(0).max(1000) }))
     .mutation(({ ctx, input }) =>
       ctx.db.pipelineStage.update({
         where: { id: input.id },
@@ -19,7 +20,7 @@ export const pipelineStageRouter = createTRPCRouter({
   create: adminProcedure
     .input(
       z.object({
-        name: z.string().min(1),
+        name: zName,
         isWon: z.boolean().default(false),
         isLost: z.boolean().default(false),
       }),
@@ -37,12 +38,12 @@ export const pipelineStageRouter = createTRPCRouter({
     }),
 
   rename: adminProcedure
-    .input(z.object({ id: z.string(), name: z.string().min(1) }))
+    .input(z.object({ id: zId, name: zName }))
     .mutation(({ ctx, input }) =>
       ctx.db.pipelineStage.update({ where: { id: input.id }, data: { name: input.name } }),
     ),
 
-  delete: adminProcedure.input(z.object({ id: z.string() })).mutation(async ({ ctx, input }) => {
+  delete: adminProcedure.input(z.object({ id: zId })).mutation(async ({ ctx, input }) => {
     const dealCount = await ctx.db.deal.count({ where: { stageId: input.id } });
     if (dealCount > 0) {
       throw new TRPCError({

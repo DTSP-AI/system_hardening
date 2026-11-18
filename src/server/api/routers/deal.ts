@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { zId, zName, zShort, zLong, zIdArray, zCustomFields } from "@/lib/validation";
 import { createTRPCRouter, authedProcedure, adminProcedure } from "@/server/api/trpc";
 import { notify } from "@/lib/notify";
 import { logAudit, toJsonSafe } from "@/lib/audit";
@@ -6,18 +7,18 @@ import { logAudit, toJsonSafe } from "@/lib/audit";
 const DEAL_PRIORITIES = ["LOW", "MEDIUM", "HIGH"] as const;
 
 const dealInput = z.object({
-  name: z.string().min(1),
-  contactId: z.string().optional(),
-  companyId: z.string().optional(),
-  stageId: z.string(),
-  amount: z.number().nonnegative().optional(),
-  currency: z.string().length(3).optional(),
+  name: zName,
+  contactId: zId.optional(),
+  companyId: zId.optional(),
+  stageId: zId,
+  amount: z.number().nonnegative().max(9_999_999_999.99).optional(),
+  currency: z.string().length(3).max(3).optional(),
   expectedCloseDate: z.coerce.date().optional(),
   priority: z.enum(DEAL_PRIORITIES).optional(),
-  source: z.string().optional(),
-  description: z.string().optional(),
-  nextStep: z.string().optional(),
-  customFields: z.record(z.string(), z.any()).optional(),
+  source: zShort.optional(),
+  description: zLong.optional(),
+  nextStep: zLong.optional(),
+  customFields: zCustomFields.optional(),
 });
 
 export const dealRouter = createTRPCRouter({
@@ -28,7 +29,7 @@ export const dealRouter = createTRPCRouter({
     }),
   ),
 
-  byId: authedProcedure.input(z.object({ id: z.string() })).query(({ ctx, input }) =>
+  byId: authedProcedure.input(z.object({ id: zId })).query(({ ctx, input }) =>
     ctx.db.deal.findUniqueOrThrow({
       where: { id: input.id },
       include: {
@@ -47,14 +48,14 @@ export const dealRouter = createTRPCRouter({
     ),
 
   update: authedProcedure
-    .input(dealInput.partial().extend({ id: z.string() }))
+    .input(dealInput.partial().extend({ id: zId }))
     .mutation(({ ctx, input }) => {
       const { id, ...data } = input;
       return ctx.db.deal.update({ where: { id }, data });
     }),
 
   moveStage: authedProcedure
-    .input(z.object({ id: z.string(), stageId: z.string() }))
+    .input(z.object({ id: zId, stageId: zId }))
     .mutation(async ({ ctx, input }) => {
       const stage = await ctx.db.pipelineStage.findUniqueOrThrow({
         where: { id: input.stageId },
@@ -81,7 +82,7 @@ export const dealRouter = createTRPCRouter({
     }),
 
   delete: adminProcedure
-    .input(z.object({ id: z.string() }))
+    .input(z.object({ id: zId }))
     .mutation(async ({ ctx, input }) => {
       const deleted = await ctx.db.deal.delete({ where: { id: input.id } });
       await logAudit(ctx.db, {
@@ -95,7 +96,7 @@ export const dealRouter = createTRPCRouter({
     }),
 
   deleteMany: adminProcedure
-    .input(z.object({ ids: z.array(z.string()).min(1) }))
+    .input(z.object({ ids: zIdArray }))
     .mutation(async ({ ctx, input }) => {
       const rows = await ctx.db.deal.findMany({ where: { id: { in: input.ids } } });
       const result = await ctx.db.deal.deleteMany({ where: { id: { in: input.ids } } });
@@ -112,7 +113,7 @@ export const dealRouter = createTRPCRouter({
     }),
 
   moveStageMany: authedProcedure
-    .input(z.object({ ids: z.array(z.string()).min(1), stageId: z.string() }))
+    .input(z.object({ ids: zIdArray, stageId: zId }))
     .mutation(async ({ ctx, input }) => {
       const stage = await ctx.db.pipelineStage.findUniqueOrThrow({
         where: { id: input.stageId },

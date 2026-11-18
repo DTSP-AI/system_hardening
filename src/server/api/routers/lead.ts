@@ -1,16 +1,17 @@
 import { z } from "zod";
+import { zId, zName, zShort, zEmail, zPhone, zIdArray, zImportRows } from "@/lib/validation";
 import { createTRPCRouter, authedProcedure, adminProcedure } from "@/server/api/trpc";
 import { notify } from "@/lib/notify";
 import { logAudit, toJsonSafe } from "@/lib/audit";
 
 const leadInput = z.object({
-  firstName: z.string().min(1),
-  lastName: z.string().min(1),
-  email: z.email().optional(),
-  phone: z.string().optional(),
-  companyName: z.string().optional(),
-  jobTitle: z.string().optional(),
-  source: z.string().optional(),
+  firstName: zName,
+  lastName: zName,
+  email: zEmail.optional(),
+  phone: zPhone.optional(),
+  companyName: zShort.optional(),
+  jobTitle: zShort.optional(),
+  source: zShort.optional(),
 });
 
 const LEAD_STATUSES = ["NEW", "CONTACTED", "QUALIFIED", "UNQUALIFIED", "CONVERTED"] as const;
@@ -21,7 +22,7 @@ export const leadRouter = createTRPCRouter({
   ),
 
   byId: authedProcedure
-    .input(z.object({ id: z.string() }))
+    .input(z.object({ id: zId }))
     .query(({ ctx, input }) => ctx.db.lead.findUniqueOrThrow({ where: { id: input.id } })),
 
   create: authedProcedure
@@ -29,20 +30,20 @@ export const leadRouter = createTRPCRouter({
     .mutation(({ ctx, input }) => ctx.db.lead.create({ data: { ...input } })),
 
   update: authedProcedure
-    .input(leadInput.partial().extend({ id: z.string() }))
+    .input(leadInput.partial().extend({ id: zId }))
     .mutation(({ ctx, input }) => {
       const { id, ...data } = input;
       return ctx.db.lead.update({ where: { id }, data });
     }),
 
   setStatus: authedProcedure
-    .input(z.object({ id: z.string(), status: z.enum(LEAD_STATUSES) }))
+    .input(z.object({ id: zId, status: z.enum(LEAD_STATUSES) }))
     .mutation(({ ctx, input }) =>
       ctx.db.lead.update({ where: { id: input.id }, data: { status: input.status } }),
     ),
 
   delete: adminProcedure
-    .input(z.object({ id: z.string() }))
+    .input(z.object({ id: zId }))
     .mutation(async ({ ctx, input }) => {
       const deleted = await ctx.db.lead.delete({ where: { id: input.id } });
       await logAudit(ctx.db, {
@@ -56,7 +57,7 @@ export const leadRouter = createTRPCRouter({
     }),
 
   deleteMany: adminProcedure
-    .input(z.object({ ids: z.array(z.string()).min(1) }))
+    .input(z.object({ ids: zIdArray }))
     .mutation(async ({ ctx, input }) => {
       const rows = await ctx.db.lead.findMany({ where: { id: { in: input.ids } } });
       const result = await ctx.db.lead.deleteMany({ where: { id: { in: input.ids } } });
@@ -73,7 +74,7 @@ export const leadRouter = createTRPCRouter({
     }),
 
   bulkCreate: adminProcedure
-    .input(z.object({ rows: z.array(leadInput) }))
+    .input(z.object({ rows: zImportRows(leadInput) }))
     .mutation(({ ctx, input }) =>
       ctx.db.lead.createMany({
         data: input.rows.map((row) => ({ ...row })),
@@ -81,7 +82,7 @@ export const leadRouter = createTRPCRouter({
     ),
 
   convert: authedProcedure
-    .input(z.object({ id: z.string() }))
+    .input(z.object({ id: zId }))
     .mutation(async ({ ctx, input }) => {
       const lead = await ctx.db.lead.findUniqueOrThrow({ where: { id: input.id } });
 
