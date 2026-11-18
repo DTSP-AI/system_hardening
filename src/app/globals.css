@@ -526,3 +526,6 @@
   .signin-wave-video { visibility:hidden; }
   .signin-circuit { background: #020408 url('/images/signin-particle-wave.jpg') center / cover no-repeat; }
 }
+
+.signin-wave-video { transition: opacity 2s linear; }
+@media (prefers-reduced-motion: reduce) { .signin-wave-video { transition: none; } }
