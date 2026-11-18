@@ -5,6 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PipelineFunnel } from "@/components/pipeline-funnel";
 import { PipelineDonut } from "@/components/pipeline-donut";
+import { BarChart3, PieChart } from "lucide-react";
 
 function StatTile({
   label,
@@ -51,8 +52,9 @@ export default function ProductionPage() {
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-5">
         <Card className="bg-card border-border lg:col-span-3">
           <CardHeader>
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Pipeline by stage
+            <CardTitle className="flex items-center gap-3 text-base font-semibold text-card-foreground">
+              <span className="panel-title-icon"><BarChart3 size={19} /></span>
+              <span>Pipeline by stage <span className="block text-xs font-normal text-muted-foreground">Deal value and count across your pipeline</span></span>
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -65,8 +67,9 @@ export default function ProductionPage() {
         </Card>
         <Card className="bg-card border-border lg:col-span-2">
           <CardHeader>
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Value by stage
+            <CardTitle className="flex items-center gap-3 text-base font-semibold text-card-foreground">
+              <span className="panel-title-icon"><PieChart size={19} /></span>
+              <span>Value by stage <span className="block text-xs font-normal text-muted-foreground">Share of total pipeline value</span></span>
             </CardTitle>
           </CardHeader>
           <CardContent>
