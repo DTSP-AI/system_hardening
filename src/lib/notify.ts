@@ -9,11 +9,7 @@ export function notify(
     type:
       | "ACTIVITY"
       | "DEAL_STAGE_CHANGE"
-      | "LEAD_CONVERTED"
-      | "POLICY_STATUS_CHANGE"
-      | "CLAIM_STATUS_CHANGE"
-      | "PROJECT_STATUS_CHANGE"
-      | "SERVICE_TICKET_STATUS_CHANGE";
+      | "LEAD_CONVERTED";
     title: string;
     body?: string;
     linkHref?: string;

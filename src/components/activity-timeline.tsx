@@ -35,20 +35,16 @@ type Activity = {
   metadata?: unknown;
 };
 
-type EntityType = "CONTACT" | "COMPANY" | "DEAL" | "LEAD" | "POLICY" | "PROJECT";
+type EntityType = "CONTACT" | "COMPANY" | "DEAL" | "LEAD";
 
 type ComposableIds = {
   contactId?: string;
   dealId?: string;
-  policyId?: string;
-  projectId?: string;
 };
 
 function resolveEntity(ids: ComposableIds): { entityType: EntityType; entityId: string } | null {
   if (ids.contactId) return { entityType: "CONTACT", entityId: ids.contactId };
   if (ids.dealId) return { entityType: "DEAL", entityId: ids.dealId };
-  if (ids.policyId) return { entityType: "POLICY", entityId: ids.policyId };
-  if (ids.projectId) return { entityType: "PROJECT", entityId: ids.projectId };
   return null;
 }
 
@@ -363,18 +359,14 @@ export function ActivityTimeline({
   activities,
   contactId,
   dealId,
-  policyId,
-  projectId,
   onChanged,
 }: {
   activities: Activity[];
   contactId?: string;
   dealId?: string;
-  policyId?: string;
-  projectId?: string;
   onChanged: () => void;
 }) {
-  const ids: ComposableIds = { contactId, dealId, policyId, projectId };
+  const ids: ComposableIds = { contactId, dealId };
   const entity = resolveEntity(ids);
 
   const completeActivity = trpc.activity.complete.useMutation({

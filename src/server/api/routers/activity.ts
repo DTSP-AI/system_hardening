@@ -5,8 +5,6 @@ const activityInput = z.object({
   type: z.enum(["NOTE", "TASK", "CALL", "EMAIL", "MEETING"]),
   contactId: z.string().optional(),
   dealId: z.string().optional(),
-  policyId: z.string().optional(),
-  projectId: z.string().optional(),
   body: z.string().optional(),
   dueDate: z.coerce.date().optional(),
 });

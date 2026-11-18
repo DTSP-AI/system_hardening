@@ -42,8 +42,6 @@ enum CustomFieldEntityType {
   CONTACT
   COMPANY
   DEAL
-  POLICY
-  PROJECT
 }
 
 enum CustomFieldType {
@@ -80,8 +78,6 @@ enum TaggableEntityType {
   COMPANY
   DEAL
   LEAD
-  POLICY
-  PROJECT
 }
 
 enum AuditAction {
@@ -90,127 +86,10 @@ enum AuditAction {
   DELETE
 }
 
-enum CoachingSessionStatus {
-  ACTIVE
-  ENDED
-  ERROR
-}
-
 enum NotificationType {
   ACTIVITY
   DEAL_STAGE_CHANGE
   LEAD_CONVERTED
-  POLICY_STATUS_CHANGE
-  CLAIM_STATUS_CHANGE
-  PROJECT_STATUS_CHANGE
-  SERVICE_TICKET_STATUS_CHANGE
-}
-
-enum LineOfBusiness {
-  PERSONAL_AUTO
-  HOMEOWNERS
-  RENTERS
-  CONDO
-  DWELLING_FIRE
-  PERSONAL_UMBRELLA
-  MOTORCYCLE
-  BOAT
-  RV
-  FLOOD
-  COMMERCIAL_AUTO
-  GENERAL_LIABILITY
-  COMMERCIAL_PROPERTY
-  BOP
-  WORKERS_COMP
-  COMMERCIAL_UMBRELLA
-  PROFESSIONAL_LIABILITY
-  CYBER
-  INLAND_MARINE
-  OTHER
-}
-
-enum PolicyStatus {
-  QUOTE
-  ACTIVE
-  PENDING_RENEWAL
-  RENEWED
-  CANCELLED
-  NON_RENEWED
-  EXPIRED
-}
-
-enum BillingType {
-  DIRECT_BILL
-  AGENCY_BILL
-}
-
-enum CommissionType {
-  NEW_BUSINESS
-  RENEWAL
-  CHARGEBACK
-  BONUS
-}
-
-enum ClaimStatus {
-  OPEN
-  CLOSED
-  DENIED
-  REOPENED
-}
-
-enum VendorType {
-  PANEL_MANUFACTURER
-  INVERTER_MANUFACTURER
-  BATTERY_MANUFACTURER
-  RACKING_MANUFACTURER
-  DISTRIBUTOR
-  OTHER
-}
-
-enum FinancingType {
-  CASH
-  LOAN
-  LEASE
-  PPA
-}
-
-enum ProjectStatus {
-  SOLD
-  SITE_SURVEY
-  DESIGN
-  PERMITTING
-  SCHEDULED
-  INSTALLING
-  INSTALLED
-  INSPECTION
-  UTILITY_PTO
-  COMPLETE
-  CANCELLED
-}
-
-enum ProjectCommissionType {
-  SALE
-  REFERRAL
-  BONUS
-  CHARGEBACK
-}
-
-enum ServiceIssueType {
-  PERFORMANCE
-  EQUIPMENT_FAILURE
-  ROOF_LEAK
-  MONITORING
-  BILLING
-  WARRANTY
-  OTHER
-}
-
-enum ServiceTicketStatus {
-  OPEN
-  SCHEDULED
-  IN_PROGRESS
-  RESOLVED
-  CLOSED
 }
 
 model Tenant {
@@ -237,17 +116,8 @@ model Tenant {
   tags                 Tag[]
   tagAssignments       TagAssignment[]
   notifications        Notification[]
-  carriers             Carrier[]
-  policies             Policy[]
-  commissions          Commission[]
-  claims               Claim[]
-  vendors              Vendor[]
-  projects             Project[]
-  projectCommissions   ProjectCommission[]
-  serviceTickets       ServiceTicket[]
   attachments          Attachment[]
   auditLogs            AuditLog[]
-  callCoachingSessions CallCoachingSession[]
 
   @@map("tenants")
 }
@@ -286,8 +156,6 @@ model Company {
   tenant   Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   contacts Contact[]
   deals    Deal[]
-  policies Policy[]
-  projects Project[]
 
   @@index([tenantId])
   @@map("companies")
@@ -319,8 +187,6 @@ model Contact {
   company    Company?   @relation(fields: [companyId], references: [id], onDelete: SetNull)
   deals      Deal[]
   activities Activity[]
-  policies   Policy[]
-  projects   Project[]
 
   @@index([tenantId])
   @@index([companyId])
@@ -381,8 +247,6 @@ model Activity {
   type        ActivityType
   contactId   String?
   dealId      String?
-  policyId    String?
-  projectId   String?
   authorId    String
   dueDate     DateTime?
   completedAt DateTime?
@@ -393,14 +257,10 @@ model Activity {
   tenant  Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   contact Contact? @relation(fields: [contactId], references: [id], onDelete: Cascade)
   deal    Deal?    @relation(fields: [dealId], references: [id], onDelete: Cascade)
-  policy  Policy?  @relation(fields: [policyId], references: [id], onDelete: Cascade)
-  project Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   @@index([tenantId])
   @@index([contactId])
   @@index([dealId])
-  @@index([policyId])
-  @@index([projectId])
   @@map("activities")
 }
 
@@ -555,234 +415,6 @@ model Notification {
   @@map("notifications")
 }
 
-model Carrier {
-  id        String   @id @default(cuid())
-  tenantId  String
-  name      String
-  naicCode  String?
-  phone     String?
-  website   String?
-  portalUrl String?
-  notes     String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  tenant   Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  policies Policy[]
-
-  @@index([tenantId])
-  @@map("carriers")
-}
-
-/// Insurance policy, the core object of the AMS module. Attaches to an
-/// existing Contact (personal lines) or Company (commercial lines) rather
-/// than a dedicated Household/Account entity -- mirrors Deal's
-/// contactId?/companyId? pattern instead of inventing a parallel concept.
-/// Renewals are modeled as a new row per term, linked backward via
-/// renewedFromId, so commission/claims history stays clean per term.
-model Policy {
-  id             String         @id @default(cuid())
-  tenantId       String
-  policyNumber   String
-  lineOfBusiness LineOfBusiness
-  status         PolicyStatus   @default(QUOTE)
-  billingType    BillingType    @default(DIRECT_BILL)
-  premium        Decimal        @db.Decimal(12, 2)
-  effectiveDate  DateTime
-  expirationDate DateTime
-  carrierId      String
-  contactId      String?
-  companyId      String?
-  ownerId        String?
-  renewedFromId  String?        @unique
-  customFields   Json           @default("{}")
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
-
-  tenant      Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  carrier     Carrier      @relation(fields: [carrierId], references: [id], onDelete: Restrict)
-  contact     Contact?     @relation(fields: [contactId], references: [id], onDelete: SetNull)
-  company     Company?     @relation(fields: [companyId], references: [id], onDelete: SetNull)
-  renewedFrom Policy?      @relation("PolicyRenewal", fields: [renewedFromId], references: [id], onDelete: SetNull)
-  renewedTo   Policy?      @relation("PolicyRenewal")
-  commissions Commission[]
-  claims      Claim[]
-  activities  Activity[]
-
-  @@index([tenantId])
-  @@index([carrierId])
-  @@index([contactId])
-  @@index([companyId])
-  @@index([expirationDate])
-  @@map("policies")
-}
-
-model Commission {
-  id            String         @id @default(cuid())
-  tenantId      String
-  policyId      String
-  type          CommissionType
-  amount        Decimal        @db.Decimal(12, 2)
-  rate          Decimal?       @db.Decimal(5, 2)
-  statementDate DateTime?
-  receivedAt    DateTime?
-  paid          Boolean        @default(false)
-  createdAt     DateTime       @default(now())
-
-  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  policy Policy @relation(fields: [policyId], references: [id], onDelete: Cascade)
-
-  @@index([tenantId])
-  @@index([policyId])
-  @@map("commissions")
-}
-
-model Claim {
-  id            String      @id @default(cuid())
-  tenantId      String
-  policyId      String
-  claimNumber   String
-  dateOfLoss    DateTime
-  description   String?
-  status        ClaimStatus @default(OPEN)
-  reserveAmount Decimal?    @db.Decimal(12, 2)
-  paidAmount    Decimal?    @db.Decimal(12, 2)
-  adjusterName  String?
-  adjusterPhone String?
-  closedAt      DateTime?
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
-
-  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  policy Policy @relation(fields: [policyId], references: [id], onDelete: Cascade)
-
-  @@index([tenantId])
-  @@index([policyId])
-  @@map("claims")
-}
-
-model Vendor {
-  id        String     @id @default(cuid())
-  tenantId  String
-  name      String
-  type      VendorType @default(OTHER)
-  phone     String?
-  website   String?
-  portalUrl String?
-  notes     String?
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
-
-  tenant           Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  panelProjects    Project[] @relation("ProjectPanelVendor")
-  inverterProjects Project[] @relation("ProjectInverterVendor")
-
-  @@index([tenantId])
-  @@map("vendors")
-}
-
-/// Solar installation, the core object of the solar-sales module. Attaches to
-/// an existing Contact (residential) or Company (commercial) rather than a
-/// dedicated Household/Site entity -- mirrors Policy's contactId?/companyId?
-/// pattern. Milestone dates track the sold -> site survey -> design ->
-/// permitting -> scheduled -> installing -> installed -> inspection ->
-/// utility PTO -> complete lifecycle explicitly rather than only via status,
-/// since each date is independently reportable (e.g. "how long from sold to
-/// PTO on average").
-model Project {
-  id                    String        @id @default(cuid())
-  tenantId              String
-  projectNumber         String
-  status                ProjectStatus @default(SOLD)
-  financingType         FinancingType @default(LOAN)
-  systemSizeKw          Decimal       @db.Decimal(6, 2)
-  panelCount            Int
-  contractAmount        Decimal       @db.Decimal(12, 2)
-  panelVendorId         String?
-  inverterVendorId      String?
-  installAddressLine1   String?
-  installAddressLine2   String?
-  installCity           String?
-  installState          String?
-  installPostalCode     String?
-  contactId             String?
-  companyId             String?
-  ownerId               String?
-  soldDate              DateTime?
-  siteSurveyDate        DateTime?
-  permitSubmittedDate   DateTime?
-  permitApprovedDate    DateTime?
-  installStartDate      DateTime?
-  installCompleteDate   DateTime?
-  inspectionDate        DateTime?
-  ptoDate               DateTime?
-  customFields          Json          @default("{}")
-  createdAt             DateTime      @default(now())
-  updatedAt             DateTime      @updatedAt
-
-  tenant          Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  panelVendor     Vendor?             @relation("ProjectPanelVendor", fields: [panelVendorId], references: [id], onDelete: SetNull)
-  inverterVendor  Vendor?             @relation("ProjectInverterVendor", fields: [inverterVendorId], references: [id], onDelete: SetNull)
-  contact         Contact?            @relation(fields: [contactId], references: [id], onDelete: SetNull)
-  company         Company?            @relation(fields: [companyId], references: [id], onDelete: SetNull)
-  commissions     ProjectCommission[]
-  serviceTickets  ServiceTicket[]
-  activities      Activity[]
-
-  @@index([tenantId])
-  @@index([panelVendorId])
-  @@index([inverterVendorId])
-  @@index([contactId])
-  @@index([companyId])
-  @@index([ptoDate])
-  @@map("projects")
-}
-
-model ProjectCommission {
-  id            String                @id @default(cuid())
-  tenantId      String
-  projectId     String
-  type          ProjectCommissionType
-  amount        Decimal               @db.Decimal(12, 2)
-  rate          Decimal?              @db.Decimal(5, 2)
-  statementDate DateTime?
-  receivedAt    DateTime?
-  paid          Boolean               @default(false)
-  createdAt     DateTime              @default(now())
-
-  tenant  Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
-
-  @@index([tenantId])
-  @@index([projectId])
-  @@map("project_commissions")
-}
-
-model ServiceTicket {
-  id              String              @id @default(cuid())
-  tenantId        String
-  projectId       String
-  ticketNumber    String
-  issueType       ServiceIssueType    @default(OTHER)
-  status          ServiceTicketStatus @default(OPEN)
-  description     String?
-  reportedAt      DateTime            @default(now())
-  resolvedAt      DateTime?
-  technicianName  String?
-  technicianPhone String?
-  costAmount      Decimal?            @db.Decimal(12, 2)
-  warrantyCovered Boolean             @default(true)
-  createdAt       DateTime            @default(now())
-  updatedAt       DateTime            @updatedAt
-
-  tenant  Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
-
-  @@index([tenantId])
-  @@index([projectId])
-  @@map("service_tickets")
-}
-
 model AuditLog {
   id         String      @id @default(cuid())
   tenantId   String
@@ -800,31 +432,3 @@ model AuditLog {
   @@map("audit_logs")
 }
 
-/// Live transcript + AI coaching tips for an active softphone call. Keyed on
-/// callSid (a plain string, not a relation to Activity.id) because the
-/// Activity row for a call is only created by the Twilio status webhook
-/// AFTER the call ends, while this row is created the moment a rep opens the
-/// AI Coach popup, mid-call -- a hard FK would create an ordering problem
-/// for no benefit, since the only read path is "find the session for this
-/// callSid". transcript/tips are batched-append JSON arrays, written by the
-/// standalone coaching relay service (see src/app/api/internal/coaching)
-/// rather than per-utterance, to keep write volume sane across concurrent calls.
-model CallCoachingSession {
-  id         String                @id @default(cuid())
-  tenantId   String
-  callSid    String
-  userId     String
-  contactId  String?
-  dealId     String?
-  status     CoachingSessionStatus @default(ACTIVE)
-  transcript Json                  @default("[]")
-  tips       Json                  @default("[]")
-  startedAt  DateTime              @default(now())
-  endedAt    DateTime?
-
-  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-
-  @@index([tenantId])
-  @@index([callSid])
-  @@map("call_coaching_sessions")
-}

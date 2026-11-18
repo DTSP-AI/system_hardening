@@ -2,7 +2,7 @@ import { z } from "zod";
 import { createTRPCRouter, tenantProcedure } from "@/server/api/trpc";
 import { requireRole } from "@/lib/rbac";
 
-const ENTITY_TYPES = ["CONTACT", "COMPANY", "DEAL", "LEAD", "POLICY", "PROJECT"] as const;
+const ENTITY_TYPES = ["CONTACT", "COMPANY", "DEAL", "LEAD"] as const;
 
 export const attachmentRouter = createTRPCRouter({
   forEntity: tenantProcedure

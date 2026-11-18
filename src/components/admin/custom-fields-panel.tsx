@@ -29,7 +29,7 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
-type EntityType = "CONTACT" | "COMPANY" | "DEAL" | "POLICY" | "PROJECT";
+type EntityType = "CONTACT" | "COMPANY" | "DEAL";
 type FieldType = "TEXT" | "NUMBER" | "DATE" | "SELECT" | "BOOLEAN";
 type Definition = RouterOutputs["customFieldDefinition"]["list"][number];
 
@@ -37,8 +37,6 @@ const ENTITY_TABS: { value: EntityType; label: string }[] = [
   { value: "CONTACT", label: "Contacts" },
   { value: "COMPANY", label: "Companies" },
   { value: "DEAL", label: "Deals" },
-  { value: "POLICY", label: "Policies" },
-  { value: "PROJECT", label: "Projects" },
 ];
 
 function DefinitionRow({ definition }: { definition: Definition }) {

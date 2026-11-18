@@ -3,7 +3,7 @@
 import { trpc } from "@/lib/trpc/client";
 import type { RouterOutputs } from "@/lib/trpc/types";
 
-export type CustomFieldEntityType = "CONTACT" | "COMPANY" | "DEAL" | "POLICY" | "PROJECT";
+export type CustomFieldEntityType = "CONTACT" | "COMPANY" | "DEAL";
 
 export type CustomFieldDefinition = RouterOutputs["customFieldDefinition"]["list"][number];
 

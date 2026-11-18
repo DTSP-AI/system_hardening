@@ -3,8 +3,6 @@
 import { use } from "react";
 import Link from "next/link";
 import { PhoneCall } from "lucide-react";
-import { useAuth } from "@clerk/nextjs";
-import { isInsuranceOrgSlug } from "@/lib/tenant-vertical";
 import { trpc } from "@/lib/trpc/client";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -12,7 +10,6 @@ import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { ActivityTimeline } from "@/components/activity-timeline";
 import { TagPicker } from "@/components/tag-picker";
-import { Badge } from "@/components/ui/badge";
 import { useCallStore } from "@/lib/stores/call-store";
 import { toast } from "sonner";
 import { EditEntityDialog, type EditFieldSchema } from "@/components/shared/edit-entity-dialog";
@@ -42,16 +39,6 @@ const CONTACT_EDIT_FIELDS: EditFieldSchema[] = [
   { name: "country", label: "Country", type: "text" },
 ];
 
-const POLICY_STATUS_VARIANT: Record<string, "default" | "secondary" | "outline" | "destructive"> = {
-  QUOTE: "outline",
-  ACTIVE: "default",
-  PENDING_RENEWAL: "secondary",
-  RENEWED: "secondary",
-  CANCELLED: "destructive",
-  NON_RENEWED: "destructive",
-  EXPIRED: "outline",
-};
-
 function Field({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div className="flex items-baseline justify-between gap-3 border-b border-border/50 py-1.5 last:border-b-0">
@@ -63,8 +50,6 @@ function Field({ label, value }: { label: string; value: React.ReactNode }) {
 
 export default function ContactDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-  const { orgSlug } = useAuth();
-  const isFoundry = isInsuranceOrgSlug(orgSlug);
   const utils = trpc.useUtils();
   const contact = trpc.contact.byId.useQuery({ id });
   const requestCall = useCallStore((s) => s.requestCall);
@@ -162,32 +147,6 @@ export default function ContactDetailPage({ params }: { params: Promise<{ id: st
       }
       right={
         <div className="flex flex-col gap-6">
-          {isFoundry && (
-            <Card className="bg-card border-border p-6">
-              <h2 className="mb-4 text-sm font-semibold text-card-foreground">Policies</h2>
-              {contact.data.policies.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No policies linked yet.</p>
-              ) : (
-                <div className="flex flex-col gap-2">
-                  {contact.data.policies.map((policy) => (
-                    <Link
-                      key={policy.id}
-                      href={`/policies/${policy.id}`}
-                      className="flex items-center justify-between gap-2 text-sm text-card-foreground hover:text-accent-foreground"
-                    >
-                      <span>
-                        {policy.policyNumber} — {policy.lineOfBusiness.replaceAll("_", " ")} ({policy.carrier.name})
-                      </span>
-                      <Badge variant={POLICY_STATUS_VARIANT[policy.status] ?? "outline"}>
-                        {policy.status.replaceAll("_", " ")}
-                      </Badge>
-                    </Link>
-                  ))}
-                </div>
-              )}
-            </Card>
-          )}
-
           <Card className="bg-card border-border p-6">
             <h2 className="mb-4 text-sm font-semibold text-card-foreground">Activity</h2>
             <ActivityTimeline

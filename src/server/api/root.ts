@@ -14,10 +14,6 @@ import { todoRouter } from "@/server/api/routers/todo";
 import { searchRouter } from "@/server/api/routers/search";
 import { tagRouter } from "@/server/api/routers/tag";
 import { notificationRouter } from "@/server/api/routers/notification";
-import { carrierRouter } from "@/server/api/routers/carrier";
-import { policyRouter } from "@/server/api/routers/policy";
-import { commissionRouter } from "@/server/api/routers/commission";
-import { claimRouter } from "@/server/api/routers/claim";
 import { attachmentRouter } from "@/server/api/routers/attachment";
 import { auditLogRouter } from "@/server/api/routers/auditLog";
 import { dashboardRouter } from "@/server/api/routers/dashboard";
@@ -39,10 +35,6 @@ export const appRouter = createTRPCRouter({
   search: searchRouter,
   tag: tagRouter,
   notification: notificationRouter,
-  carrier: carrierRouter,
-  policy: policyRouter,
-  commission: commissionRouter,
-  claim: claimRouter,
   attachment: attachmentRouter,
   auditLog: auditLogRouter,
 });

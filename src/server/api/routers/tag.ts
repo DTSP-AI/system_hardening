@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { createTRPCRouter, tenantProcedure, adminProcedure } from "@/server/api/trpc";
 
-const ENTITY_TYPES = ["CONTACT", "COMPANY", "DEAL", "LEAD", "POLICY", "PROJECT"] as const;
+const ENTITY_TYPES = ["CONTACT", "COMPANY", "DEAL", "LEAD"] as const;
 
 export const tagRouter = createTRPCRouter({
   list: tenantProcedure.query(({ ctx }) =>

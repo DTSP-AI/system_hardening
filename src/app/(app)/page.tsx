@@ -1,19 +1,13 @@
-import { auth } from "@clerk/nextjs/server";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { NotificationsPanel } from "@/components/dashboard/notifications-panel";
 import { CalendarSnapshot } from "@/components/dashboard/calendar-snapshot";
 import { PhoneWidget } from "@/components/dashboard/phone-widget";
-import { RenewalsDue } from "@/components/dashboard/renewals-due";
 import { TodoBoard } from "@/components/dashboard/todo-board";
 import { KpiTiles } from "@/components/dashboard/kpi-tiles";
 import { PipelineChart } from "@/components/dashboard/pipeline-chart";
 import { ActivityFeed } from "@/components/dashboard/activity-feed";
-import { isInsuranceOrgSlug } from "@/lib/tenant-vertical";
 
-export default async function HomePage() {
-  const { orgSlug } = await auth();
-  const isFoundry = isInsuranceOrgSlug(orgSlug);
-
+export default function HomePage() {
   const panelTitle = "text-xs font-semibold tracking-wide text-muted-foreground uppercase";
 
   return (
@@ -39,7 +33,7 @@ export default async function HomePage() {
         </Card>
       </div>
 
-      <div className={`grid grid-cols-1 items-start gap-4 ${isFoundry ? "lg:grid-cols-4" : "lg:grid-cols-3"}`}>
+      <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-3">
         <TodoBoard />
         <Card>
           <CardHeader>
@@ -67,16 +61,6 @@ export default async function HomePage() {
             </CardContent>
           </Card>
         </div>
-        {isFoundry && (
-          <Card>
-            <CardHeader>
-              <CardTitle className={panelTitle}>Renewals Due</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <RenewalsDue />
-            </CardContent>
-          </Card>
-        )}
       </div>
     </div>
   );

@@ -36,7 +36,6 @@ export const contactRouter = createTRPCRouter({
       include: {
         company: true,
         deals: { include: { stage: true } },
-        policies: { include: { carrier: true } },
         activities: { orderBy: { createdAt: "desc" } },
       },
     }),

@@ -8,7 +8,7 @@ import { trpc } from "@/lib/trpc/client";
 import { Button } from "@/components/ui/button";
 import { useCurrentRole } from "@/lib/hooks/use-current-role";
 
-const ENTITY_TYPES = ["CONTACT", "COMPANY", "DEAL", "LEAD", "POLICY", "PROJECT"] as const;
+const ENTITY_TYPES = ["CONTACT", "COMPANY", "DEAL", "LEAD"] as const;
 export type AttachmentEntityType = (typeof ENTITY_TYPES)[number];
 
 function formatBytes(bytes: number): string {

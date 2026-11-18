@@ -14,15 +14,9 @@ import {
   CheckSquare,
   Search,
   Radar,
-  FileText,
-  CalendarClock,
-  Shield,
-  Percent,
-  LifeBuoy,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSearchStore } from "@/lib/stores/search-store";
-import { isInsuranceOrgSlug } from "@/lib/tenant-vertical";
 
 const CORE_NAV_ITEMS = [
   { href: "/", label: "Home", icon: LayoutDashboard, chip: "var(--viz-blue)" },
@@ -35,14 +29,6 @@ const CORE_NAV_ITEMS = [
   { href: "/contacts", label: "Contacts", icon: Users, chip: "var(--viz-aqua)" },
 ];
 
-const INSURANCE_NAV_ITEMS = [
-  { href: "/policies", label: "Policies", icon: FileText, chip: "var(--viz-violet)" },
-  { href: "/renewals", label: "Renewals", icon: CalendarClock, chip: "var(--viz-orange)" },
-  { href: "/carriers", label: "Carriers", icon: Shield, chip: "var(--viz-yellow)" },
-  { href: "/commissions", label: "Commissions", icon: Percent, chip: "var(--viz-blue)" },
-  { href: "/claims", label: "Claims", icon: LifeBuoy, chip: "var(--viz-aqua)" },
-];
-
 const ADMIN_NAV_ITEM = {
   href: "/admin",
   label: "Admin",
@@ -52,11 +38,9 @@ const ADMIN_NAV_ITEM = {
 
 export function SidebarNav() {
   const pathname = usePathname();
-  const { orgRole, orgSlug } = useAuth();
-  const isFoundry = isInsuranceOrgSlug(orgSlug);
+  const { orgRole } = useAuth();
   const navItems = [
     ...CORE_NAV_ITEMS,
-    ...(isFoundry ? INSURANCE_NAV_ITEMS : []),
     ...(orgRole === "org:admin" ? [ADMIN_NAV_ITEM] : []),
   ];
   const toggleSearch = useSearchStore((s) => s.toggle);

@@ -4,7 +4,6 @@ import { auth, clerkClient } from "@clerk/nextjs/server";
 import { prisma, scopedDb } from "@/lib/db";
 import { ensureTenant, ensureMembership } from "@/lib/tenant";
 import { requireRole } from "@/lib/rbac";
-import { isInsuranceOrgSlug } from "@/lib/tenant-vertical";
 
 export async function createTRPCContext() {
   const { userId, orgId } = await auth();
@@ -78,33 +77,6 @@ export const tenantProcedure = protectedProcedure.use(async ({ ctx, next }) => {
 
 /** Same guarantees as tenantProcedure, plus requires an ADMIN or OWNER Membership role. */
 export const adminProcedure = tenantProcedure.use(async ({ ctx, next }) => {
-  await requireRole(
-    ctx.db,
-    { tenantId: ctx.tenantId, clerkOrgId: ctx.orgId!, clerkUserId: ctx.userId },
-    ["OWNER", "ADMIN"],
-  );
-  return next({ ctx });
-});
-
-/**
- * Insurance-vertical features (Policies, Carriers, Commissions, Claims) are
- * specific to the Foundry Protects tenant -- see src/lib/tenant-vertical.ts.
- * The sidebar already hides these nav items for other tenants, but nav
- * hiding alone doesn't stop a direct API call, so routers for these features
- * must gate on this procedure rather than the bare tenantProcedure.
- */
-export const insuranceProcedure = tenantProcedure.use(({ ctx, next }) => {
-  if (!isInsuranceOrgSlug(ctx.tenantSlug)) {
-    throw new TRPCError({
-      code: "FORBIDDEN",
-      message: "This feature is only available to the Foundry Protects workspace.",
-    });
-  }
-  return next({ ctx });
-});
-
-/** Same guarantees as insuranceProcedure, plus requires an ADMIN or OWNER Membership role. */
-export const insuranceAdminProcedure = insuranceProcedure.use(async ({ ctx, next }) => {
   await requireRole(
     ctx.db,
     { tenantId: ctx.tenantId, clerkOrgId: ctx.orgId!, clerkUserId: ctx.userId },
