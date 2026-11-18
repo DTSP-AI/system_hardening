@@ -621,3 +621,12 @@
 
 /* A light frosted layer softens the wave without hiding its movement. */
 .signin-circuit::before { display: block; position: absolute; inset: 0; z-index: 1; content: ''; background: rgba(4, 14, 27, .12); backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px); }
+
+/* Center the subtitle and its accent under the YBRYX wordmark. */
+.signin-brand small { justify-content: center; text-align: center; }
+
+/* Place the opportunity card directly after the introductory message. */
+.signin-promise { margin-top: 30px; }
+.signin-benefits { margin-top: auto; padding-top: 42px; }
+.signin-message .signin-headline-sub { font-size: clamp(19px, 2.1vw, 31px); }
+@media (max-width: 420px) { .signin-message .signin-headline-sub { font-size: clamp(15px, 4.6vw, 19px); } }
