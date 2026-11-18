@@ -1,14 +1,16 @@
 import { NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
 import twilio from "twilio";
+import { requireAppUserForRoute } from "@/lib/auth/app-user";
 
 const { AccessToken } = twilio.jwt;
 const { VoiceGrant } = AccessToken;
 
 export async function POST() {
-  const { userId } = await auth();
+  const guard = await requireAppUserForRoute();
+  if (guard instanceof Response) return guard;
+  const userId = guard.user.clerkUserId;
   if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   const { TWILIO_ACCOUNT_SID, TWILIO_API_KEY_SID, TWILIO_API_KEY_SECRET, TWILIO_TWIML_APP_SID } =

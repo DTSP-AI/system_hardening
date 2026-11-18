@@ -1,13 +1,11 @@
 import { NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
+import { requireAppUserForRoute } from "@/lib/auth/app-user";
 import { prisma } from "@/lib/db";
 
 export async function GET(_req: Request, { params }: { params: Promise<{ sid: string }> }) {
+  const guard = await requireAppUserForRoute();
+  if (guard instanceof Response) return guard;
   const { sid } = await params;
-  const { userId } = await auth();
-  if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
 
   // Recordings aren't public on Twilio's side -- confirm an activity
   // actually references this recording before proxying, so audio can't be

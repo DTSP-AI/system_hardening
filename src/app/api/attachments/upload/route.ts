@@ -1,12 +1,10 @@
 import { NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
+import { requireAppUserForRoute } from "@/lib/auth/app-user";
 import { put } from "@vercel/blob";
 
 export async function POST(req: Request) {
-  const { userId } = await auth();
-  if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const guard = await requireAppUserForRoute();
+  if (guard instanceof Response) return guard;
 
   const formData = await req.formData();
   const file = formData.get("file");
