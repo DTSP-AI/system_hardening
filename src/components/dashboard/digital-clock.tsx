@@ -19,8 +19,8 @@ export function DigitalClock({ align = "left" }: { align?: "left" | "right" }) {
 
   if (!now) {
     return (
-      <div className={`flex flex-col gap-1 ${alignClass}`}>
-        <span className="font-brand text-3xl text-foreground">--:--:--</span>
+      <div className={`flex flex-col gap-0.5 ${alignClass}`}>
+        <span className="font-brand text-2xl leading-none text-foreground">--:--:--</span>
       </div>
     );
   }
@@ -37,8 +37,8 @@ export function DigitalClock({ align = "left" }: { align?: "left" | "right" }) {
   });
 
   return (
-    <div className={`flex flex-col gap-1 ${alignClass}`}>
-      <span className="font-brand text-3xl tracking-tight text-foreground tabular-nums">
+    <div className={`flex flex-col gap-0.5 ${alignClass}`}>
+      <span className="font-brand text-2xl leading-none tracking-tight text-foreground tabular-nums">
         {time}
       </span>
       <span className="text-sm text-muted-foreground">{date}</span>
