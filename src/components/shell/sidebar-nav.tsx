@@ -11,15 +11,13 @@ import {
   BarChart3,
   UserPlus,
   CheckSquare,
-  Search,
   Radar,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useSearchStore } from "@/lib/stores/search-store";
 import { useCurrentRole } from "@/lib/hooks/use-current-role";
 
 const CORE_NAV_ITEMS = [
-  { href: "/", label: "Home", icon: LayoutDashboard, chip: "var(--viz-blue)" },
+  { href: "/", label: "Overview", icon: LayoutDashboard, chip: "var(--viz-blue)" },
   { href: "/priorities", label: "Priorities", icon: CheckSquare, chip: "var(--viz-aqua)" },
   { href: "/production", label: "Production", icon: BarChart3, chip: "var(--viz-violet)" },
   { href: "/prospecting", label: "Prospecting", icon: Radar, chip: "var(--viz-violet)" },
@@ -43,21 +41,9 @@ export function SidebarNav() {
     ...CORE_NAV_ITEMS,
     ...(isAdmin ? [ADMIN_NAV_ITEM] : []),
   ];
-  const toggleSearch = useSearchStore((s) => s.toggle);
 
   return (
     <nav className="flex flex-col gap-1 px-3">
-      <button
-        type="button"
-        onClick={toggleSearch}
-        className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-semibold text-sidebar-foreground/80 transition-colors hover:bg-sidebar-accent/60 hover:text-sidebar-foreground"
-      >
-        <span className="flex size-6 shrink-0 items-center justify-center rounded-md bg-muted/40 text-muted-foreground">
-          <Search className="size-3.5" />
-        </span>
-        Search
-        <span className="ml-auto text-xs text-muted-foreground">⌘K</span>
-      </button>
       {navItems.map((item) => {
         const isActive = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
         const Icon = item.icon;
@@ -66,17 +52,17 @@ export function SidebarNav() {
             key={item.href}
             href={item.href}
             className={cn(
-              "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-semibold transition-colors border-l-2 border-transparent",
+              "crm-nav-item flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium transition-colors",
               isActive
-                ? "bg-sidebar-accent text-sidebar-accent-foreground border-l-2 border-sidebar-accent-foreground"
+                ? "crm-nav-active bg-sidebar-accent text-sidebar-accent-foreground"
                 : "text-sidebar-foreground/80 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground",
             )}
           >
             <span
               className="flex size-6 shrink-0 items-center justify-center rounded-md"
               style={{
-                backgroundColor: `color-mix(in oklab, ${item.chip} 22%, transparent)`,
-                color: item.chip,
+                backgroundColor: "transparent",
+                color: "currentColor",
               }}
             >
               <Icon className="size-3.5" />

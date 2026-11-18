@@ -26,7 +26,7 @@ export function Greeting() {
   const greeting = hour === null ? "Welcome" : greetingForHour(hour);
 
   return (
-    <span className="font-brand text-xl tracking-tight text-foreground">
+    <span className="text-3xl font-bold tracking-tight text-foreground">
       {greeting}
       {user?.firstName ? `, ${user.firstName}` : ""}
     </span>
