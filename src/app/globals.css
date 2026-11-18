@@ -567,3 +567,4 @@
 .signin-message .signin-headline-by { color: #fff; }
 .signin-message .signin-headline-sub { font-size: clamp(20px, 2.5vw, 36px); }
 @media (max-width: 420px) { .signin-message .signin-headline-sub { font-size: clamp(16px, 5vw, 21px); } }
+.signin-message .signin-headline-by strong { font-family: YbryxWordmark, sans-serif; font-weight: 400; letter-spacing: .045em; }
