@@ -6,7 +6,7 @@ export default function SignInPage() {
     <section className="signin-brand-panel">
       <div className="signin-brand"><span>YBRYX <small className="block mt-1">Business Operating System</small></span></div>
       <div className="signin-message"><h1>Better relationships.<br/><span>Stronger business.</span></h1><p>Your clients, conversations, and next steps. Connected.</p></div>
-      <div className="signin-circuit" aria-hidden="true"><span className="signin-stars" /></div>
+      <div className="signin-circuit" aria-hidden="true"><video className="signin-wave-video" autoPlay muted loop playsInline preload="metadata" poster="/images/signin-particle-wave.jpg"><source src="/videos/ybryxwave.mp4" type="video/mp4" /></video></div>
       <div className="signin-promise"><span className="signin-icon"><BarChart3 size={27}/></span><div><strong>Your next opportunity<br/>starts here.</strong><p>Turn conversations into lasting relationships.</p></div><ArrowUpRight size={19}/></div>
       <div className="signin-benefits"><span><Users/>More meaningful clients</span><span><MessageSquare/>Smarter conversations</span><span><BarChart3/>Bigger opportunities</span></div>
     </section>

@@ -518,3 +518,11 @@
 /* A light sign-in card contrasts with the dark YBRYX backdrop. */
 .signin-form-wrap { background: #fff; color: #10233a; border: 1px solid #e2eaf1; border-radius: 16px; padding: clamp(24px, 4vw, 40px); box-shadow: 0 22px 70px rgba(0, 0, 0, .28); }
 .signin-heading p { color: #66788c; }
+
+/* Full-bleed looping wave behind the sign-in introduction. */
+.signin-wave-video { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center; }
+.signin-circuit::before { inset:0; z-index:1; opacity:1; animation:none; filter:none; background:linear-gradient(180deg, rgba(2, 4, 8, .75) 0%, rgba(2, 6, 13, .35) 48%, rgba(2, 5, 10, .55) 100%); }
+@media (prefers-reduced-motion: reduce) {
+  .signin-wave-video { visibility:hidden; }
+  .signin-circuit { background: #020408 url('/images/signin-particle-wave.jpg') center / cover no-repeat; }
+}
