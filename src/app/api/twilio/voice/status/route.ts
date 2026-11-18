@@ -1,44 +1,52 @@
-import { prisma } from "@/lib/db";
-import { readValidatedTwilioForm } from "@/lib/twilio/validate";
+import { mergeCallMetadata } from "@/lib/twilio/activity-merge";
+import { ACTIVITY_ID_RE } from "@/lib/twilio/twiml";
+import { TwilioConfigError, readValidatedTwilioForm } from "@/lib/twilio/validate";
+
+const FINAL_STATUSES = new Set(["completed", "busy", "no-answer", "failed", "canceled"]);
 
 export async function POST(req: Request) {
-  const params = await readValidatedTwilioForm(req);
+  let params: Record<string, string> | null;
+  try {
+    params = await readValidatedTwilioForm(req);
+  } catch (err) {
+    if (err instanceof TwilioConfigError) {
+      console.error("twilio/voice/status: config error", err);
+      return new Response("Server misconfigured", { status: 500 });
+    }
+    throw err;
+  }
   if (!params) {
     return new Response("Invalid signature", { status: 403 });
   }
 
-  const url = new URL(req.url);
-  const userId = url.searchParams.get("userId");
-  const contactId = url.searchParams.get("contactId") || undefined;
-  const dealId = url.searchParams.get("dealId") || undefined;
-  // The parent-leg CallSid we minted in ../route.ts -- see the comment there
-  // for why this (not params.CallSid, which is this child leg's own id) is
-  // the value the recording webhook will later look this Activity up by.
-  const callSid = url.searchParams.get("callSid") || params.CallSid;
-
-  if (!userId) {
+  // activityId is the canonical id we minted in ../route.ts; never match on a CallSid.
+  const activityId = new URL(req.url).searchParams.get("activityId");
+  if (!activityId || !ACTIVITY_ID_RE.test(activityId)) {
+    console.warn("twilio/voice/status: missing or malformed activityId");
     return new Response("OK", { status: 200 });
   }
 
-  const { CallStatus, CallDuration, To, From, Direction } = params;
+  const status = params.CallStatus;
+  if (!status || !FINAL_STATUSES.has(status)) {
+    return new Response("OK", { status: 200 });
+  }
 
-  await prisma.activity.create({
-    data: {
-      type: "CALL",
-      contactId,
-      dealId,
-      authorId: userId,
-      body: `Call to ${To} — ${CallStatus}`,
-      metadata: {
-        callSid,
-        status: CallStatus,
-        durationSeconds: CallDuration ? Number(CallDuration) : 0,
-        to: To,
-        from: From,
-        direction: Direction,
-      },
-    },
-  });
+  const patch = {
+    status,
+    durationSeconds: Number(params.CallDuration) || 0,
+    childCallSid: params.CallSid ?? "",
+  };
+  const body = params.To ? `Call to ${params.To} — ${status}` : undefined;
+
+  try {
+    const rows = await mergeCallMetadata(activityId, patch, body);
+    if (rows === 0) {
+      console.warn("twilio/voice/status: no activity matched", activityId);
+    }
+  } catch (err) {
+    console.error("twilio/voice/status: db error", err);
+    return new Response("Error", { status: 500 });
+  }
 
   return new Response("OK", { status: 200 });
 }

@@ -1,92 +1,125 @@
-import twilio from "twilio";
 import { prisma } from "@/lib/db";
-import { readValidatedTwilioForm, parseCallIdentity } from "@/lib/twilio/validate";
+import { CALL_DAILY } from "@/lib/abuse-limits";
+import { consumeRateLimit } from "@/lib/rate-limit";
+import { checkDialable } from "@/lib/twilio/dial-policy";
+import { buildOutboundDialTwiml, sayAndHangup } from "@/lib/twilio/twiml";
+import {
+  TwilioConfigError,
+  getRequestOrigin,
+  parseCallIdentity,
+  readValidatedTwilioForm,
+} from "@/lib/twilio/validate";
+
+// Every TwiML response is HTTP 200 text/xml; the only non-200 is a bad signature.
+function twiml(xml: string): Response {
+  return new Response(xml, { headers: { "Content-Type": "text/xml" } });
+}
+
+const UNAVAILABLE = "Calling is temporarily unavailable. Please try again later.";
+
+/** A client-supplied id: empty means absent; must be 1-64 chars; must exist. */
+async function resolveOptionalId(
+  raw: string | undefined,
+  label: "contactId" | "dealId",
+): Promise<string | null> {
+  if (!raw) return null;
+  if (raw.length > 64) {
+    console.warn(`twilio/voice: ${label} too long, ignoring`);
+    return null;
+  }
+  const found =
+    label === "contactId"
+      ? await prisma.contact.findUnique({ where: { id: raw }, select: { id: true } })
+      : await prisma.deal.findUnique({ where: { id: raw }, select: { id: true } });
+  if (!found) {
+    console.warn(`twilio/voice: ${label} not found, ignoring`);
+    return null;
+  }
+  return found.id;
+}
 
 export async function POST(req: Request) {
-  const params = await readValidatedTwilioForm(req);
+  let params: Record<string, string> | null;
+  try {
+    params = await readValidatedTwilioForm(req);
+  } catch (err) {
+    if (err instanceof TwilioConfigError) {
+      console.error("twilio/voice: config error", err);
+      return twiml(sayAndHangup(UNAVAILABLE));
+    }
+    throw err;
+  }
   if (!params) {
     return new Response("Invalid signature", { status: 403 });
   }
 
-  const response = new twilio.twiml.VoiceResponse();
-
   // From is "client:<identity>" for calls placed by the softphone dock --
-  // Twilio has already authenticated this identity via the Access Token used
-  // to establish the connection, so it's trustworthy in a way the client-
-  // supplied params below (contactId/dealId) are not.
+  // Twilio has already authenticated this identity via the Access Token.
   const rawFrom = params.From ?? "";
-  const identity = parseCallIdentity(rawFrom.replace(/^client:/, ""));
-  const to = params.To;
-
-  if (!identity || !to) {
-    response.say("This call is missing required routing information.");
-    return new Response(response.toString(), {
-      headers: { "Content-Type": "text/xml" },
-    });
+  const identity = rawFrom.startsWith("client:")
+    ? parseCallIdentity(rawFrom.slice("client:".length))
+    : null;
+  const rawTo = params.To;
+  if (!identity || !rawTo) {
+    return twiml(sayAndHangup("This call is missing required routing information."));
   }
 
-  // Allowlist check: the identity is a Clerk user id; it must map to an
-  // active app User, otherwise no outbound call is placed.
-  const caller = await prisma.user.findUnique({ where: { clerkUserId: identity.userId } });
-  if (!caller || caller.deactivatedAt) {
-    response.say("This caller is not authorized.");
-    response.hangup();
-    return new Response(response.toString(), {
-      headers: { "Content-Type": "text/xml" },
-    });
+  // Before any DB work so bad numbers never use up the cap.
+  const dial = checkDialable(rawTo);
+  if (!dial.ok) {
+    console.warn(`twilio/voice: number rejected (${dial.reason})`);
+    return twiml(sayAndHangup("This number cannot be dialed."));
   }
 
-  const requestUrl = new URL(req.url);
-  const proto = req.headers.get("x-forwarded-proto") ?? requestUrl.protocol.replace(":", "");
-  const host = req.headers.get("host") ?? requestUrl.host;
+  const callerId = process.env.TWILIO_CALLER_ID;
+  if (!callerId) {
+    console.error("twilio/voice: TWILIO_CALLER_ID is not set");
+    return twiml(sayAndHangup("Calling is not configured."));
+  }
 
-  // Twilio reports a DIFFERENT CallSid to each downstream webhook: the
-  // Number-level statusCallback below fires with the CHILD leg's CallSid,
-  // while the Dial-level recordingStatusCallback fires with the PARENT
-  // leg's CallSid (this top-level request's own params.CallSid). Those two
-  // webhooks can never agree on a CallSid by trusting their own params, so
-  // we mint one canonical id here -- the parent CallSid -- and thread it
-  // through both URLs as an explicit query param that both sides read
-  // instead of (or in preference to) their own reported CallSid.
-  const parentCallSid = params.CallSid ?? "";
+  try {
+    const user = await prisma.user.findUnique({ where: { clerkUserId: identity.userId } });
+    if (!user || user.deactivatedAt) {
+      return twiml(sayAndHangup("This caller is not authorized."));
+    }
 
-  const statusUrl = new URL(`${proto}://${host}/api/twilio/voice/status`);
-  statusUrl.searchParams.set("userId", identity.userId);
-  if (params.contactId) statusUrl.searchParams.set("contactId", params.contactId);
-  if (params.dealId) statusUrl.searchParams.set("dealId", params.dealId);
-  statusUrl.searchParams.set("callSid", parentCallSid);
+    const contactId = await resolveOptionalId(params.contactId, "contactId");
+    const dealId = await resolveOptionalId(params.dealId, "dealId");
 
-  const recordingUrl = new URL(`${proto}://${host}/api/twilio/voice/recording`);
-  recordingUrl.searchParams.set("callSid", parentCallSid);
+    const decision = await consumeRateLimit("call:start:" + user.id, CALL_DAILY);
+    if (!decision.allowed) {
+      return twiml(sayAndHangup("You have reached the daily call limit."));
+    }
 
-  const whisperUrl = new URL(`${proto}://${host}/api/twilio/voice/announce`);
+    // parentCallSid is informational only; correlation uses this Activity's id.
+    const activity = await prisma.activity.create({
+      data: {
+        type: "CALL",
+        authorId: identity.userId,
+        contactId,
+        dealId,
+        body: "Call to " + dial.e164,
+        metadata: {
+          status: "initiated",
+          to: dial.e164,
+          from: callerId,
+          direction: "outbound",
+          parentCallSid: params.CallSid ?? "",
+        },
+      },
+      select: { id: true },
+    });
 
-  // Heard by the agent's browser leg before the callee is dialed.
-  response.say("This call may be recorded for quality and training purposes.");
-
-  const dial = response.dial({
-    callerId: process.env.TWILIO_CALLER_ID || undefined,
-    record: "record-from-answer",
-    recordingStatusCallback: recordingUrl.toString(),
-    recordingStatusCallbackMethod: "POST",
-    recordingStatusCallbackEvent: ["completed"],
-  });
-  dial.number(
-    {
-      statusCallback: statusUrl.toString(),
-      statusCallbackMethod: "POST",
-      statusCallbackEvent: ["completed"],
-      // "Whisper" URL: Twilio requests this once the callee answers and plays
-      // its TwiML to that leg alone, before auto-joining it to the bridge --
-      // this is what actually informs the *called* party, since a <Say> at
-      // the top of this response only plays on the agent's leg.
-      url: whisperUrl.toString(),
-      method: "POST",
-    },
-    to,
-  );
-
-  return new Response(response.toString(), {
-    headers: { "Content-Type": "text/xml" },
-  });
+    return twiml(
+      buildOutboundDialTwiml({
+        origin: getRequestOrigin(req),
+        activityId: activity.id,
+        to: dial.e164,
+        callerId,
+      }),
+    );
+  } catch (err) {
+    console.error("twilio/voice: failed", err);
+    return twiml(sayAndHangup(UNAVAILABLE));
+  }
 }

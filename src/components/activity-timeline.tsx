@@ -13,7 +13,8 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
 type CallMetadata = {
-  callSid?: string;
+  parentCallSid?: string;
+  childCallSid?: string;
   status?: string;
   to?: string;
   from?: string;
