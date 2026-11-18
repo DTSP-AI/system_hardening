@@ -6,7 +6,7 @@ export default function SignInPage() {
   return <main className="signin-layout">
     <section className="signin-brand-panel">
       <div className="signin-brand"><span>YBRYX <small className="block mt-1">Business Operating System</small></span></div>
-      <div className="signin-message"><h1>Better relationships.<br/><span>Stronger business.</span></h1><p>Your clients, conversations, and next steps. Connected.</p></div>
+      <div className="signin-message"><h1>Business operations, optimized.<br/><span>Clarity across your enterprise.</span></h1><p>Connect your people, processes, and data for a deeper view of your business—and the confidence to move it forward.</p></div>
       <SigninWave />
       <div className="signin-promise"><span className="signin-icon"><BarChart3 size={27}/></span><div><strong>Your next opportunity<br/>starts here.</strong><p>Turn conversations into lasting relationships.</p></div><ArrowUpRight size={19}/></div>
       <div className="signin-benefits"><span><Users/>More meaningful clients</span><span><MessageSquare/>Smarter conversations</span><span><BarChart3/>Bigger opportunities</span></div>

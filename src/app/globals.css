@@ -529,3 +529,12 @@
 
 .signin-wave-video { transition: opacity 2s linear; }
 @media (prefers-reduced-motion: reduce) { .signin-wave-video { transition: none; } }
+
+/* Give the wordmark more presence and align its subtitle to the right. */
+.signin-brand { font-size: clamp(52px, 5.4vw, 76px); }
+.signin-brand > span { display: inline-block; max-width: 100%; }
+.signin-brand small { text-align: right; letter-spacing: .13em; }
+@media (max-width: 420px) {
+  .signin-brand { font-size: clamp(42px, 12vw, 52px); }
+  .signin-brand small { font-size: 9px; }
+}
