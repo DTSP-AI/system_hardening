@@ -538,3 +538,15 @@
   .signin-brand { font-size: clamp(42px, 12vw, 52px); }
   .signin-brand small { font-size: 9px; }
 }
+
+/* A single uninterrupted video backdrop runs behind both sign-in columns. */
+.signin-layout { position: relative; isolation: isolate; overflow: hidden; background: #020408; }
+.signin-layout > .signin-circuit { position: absolute; inset: 0; z-index: 0; }
+.signin-brand-panel, .signin-form-panel { position: relative; z-index: 1; background: transparent; }
+.signin-brand-panel { isolation: auto; }
+.signin-message h1 { max-width: 700px; }
+.signin-form-panel { color: #f0f4f9; }
+@media (max-width: 900px) {
+  .signin-brand-panel { min-height: 0; padding-bottom: 10px; }
+  .signin-form-panel { padding-top: 30px; }
+}
