@@ -72,7 +72,7 @@ function QuadrantColumn({
   return (
     <div className="flex flex-col gap-2">
       <form
-        className="flex items-center gap-2"
+        className="flex flex-wrap items-center gap-2"
         onSubmit={(e) => {
           e.preventDefault();
           if (!title.trim() || create.isPending) return;
@@ -88,7 +88,7 @@ function QuadrantColumn({
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="Add a task…"
-          className="h-7 flex-1 text-xs"
+          className="h-7 w-full basis-full text-xs"
         />
         <Button type="submit" size="sm" disabled={!title.trim() || create.isPending}>
           Add
@@ -175,9 +175,9 @@ export function TodoBoard() {
           Current Priorities
         </CardTitle>
       </CardHeader>
-      <CardContent className="flex flex-col divide-y divide-border">
+      <CardContent className="grid grid-cols-1 items-start gap-3 md:grid-cols-2 xl:grid-cols-4">
         {QUADRANTS.map((q) => (
-          <div key={q.key} className="py-2 first:pt-0 last:pb-0">
+          <div key={q.key} className="rounded-lg border border-border p-3">
             <QuadrantColumn
               quadrant={q.key}
               label={q.label}
