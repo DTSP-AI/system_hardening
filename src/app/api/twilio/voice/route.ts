@@ -1,4 +1,5 @@
 import twilio from "twilio";
+import { prisma } from "@/lib/db";
 import { readValidatedTwilioForm, parseCallIdentity } from "@/lib/twilio/validate";
 
 export async function POST(req: Request) {
@@ -19,6 +20,17 @@ export async function POST(req: Request) {
 
   if (!identity || !to) {
     response.say("This call is missing required routing information.");
+    return new Response(response.toString(), {
+      headers: { "Content-Type": "text/xml" },
+    });
+  }
+
+  // Allowlist check: the identity is a Clerk user id; it must map to an
+  // active app User, otherwise no outbound call is placed.
+  const caller = await prisma.user.findUnique({ where: { clerkUserId: identity.userId } });
+  if (!caller || caller.deactivatedAt) {
+    response.say("This caller is not authorized.");
+    response.hangup();
     return new Response(response.toString(), {
       headers: { "Content-Type": "text/xml" },
     });
