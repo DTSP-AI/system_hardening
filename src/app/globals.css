@@ -701,3 +701,10 @@
   background-position: center, center, center, right top, left bottom, center, center, center;
   background-repeat: no-repeat;
 }
+
+/* The selected navigation item echoes the cyan accent in the wordmark. */
+.crm-sidebar .crm-nav-active {
+  background: linear-gradient(105deg, #83e8f8 0%, #32c0df 55%, #1689bd 100%);
+  color: #05233a;
+  box-shadow: 0 3px 14px rgba(8, 183, 232, .2);
+}
