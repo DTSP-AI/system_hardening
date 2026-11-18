@@ -10,14 +10,13 @@ import { useCallStore } from "@/lib/stores/call-store";
 import { GlobalSearch } from "@/components/shell/global-search";
 import { NotificationBell } from "@/components/shell/notification-bell";
 import { ThemeToggle } from "@/components/shell/theme-toggle";
-import { BrandMark } from "@/components/shell/brand-mark";
 import { useSearchStore } from "@/lib/stores/search-store";
 export function AppShell({ children }: { children: React.ReactNode }) {
   const [open,setOpen]=useState(false); const toggleSearch=useSearchStore(s=>s.toggle); const callStatus=useCallStore(s=>s.status);
   return <div className="crm-shell"><div className="app-backdrop"/>
     {open && <button aria-label="Close navigation" className="crm-mobile-backdrop" onClick={()=>setOpen(false)}/>}
     <aside className={`crm-sidebar ${open ? "crm-sidebar-open" : ""}`}>
-      <div className="crm-sidebar-brand"><BrandMark/><span>YBRYX <small>CRM</small></span><button className="crm-close" onClick={()=>setOpen(false)} aria-label="Close navigation"><X size={19}/></button></div>
+      <div className="crm-sidebar-brand"><span className="crm-sidebar-wordmark">YBRYX <small>Business Operating Systems</small></span><button className="crm-close" onClick={()=>setOpen(false)} aria-label="Close navigation"><X size={19}/></button></div>
       <div className="crm-workspace">YBRYX <span>•</span> Workspace</div>
       <div className="crm-nav-scroll" onClick={()=>setOpen(false)}><SidebarNav/></div><div className="crm-account"><AccountButton/></div>
     </aside>

@@ -647,3 +647,36 @@
 .signin-form-wrap { border: 1px solid rgba(181, 220, 245, .75); box-shadow: 0 24px 72px rgba(0, 0, 0, .4), 0 0 0 1px rgba(8, 183, 232, .12); }
 /* The surrounding card provides the welcome title; suppress Clerk's duplicate header. */
 .signin-form-wrap .cl-header { display: none !important; }
+
+/* Midnight star field and fine circuit lines across CRM workspace pages. */
+.crm-main {
+  --foreground: #edf5fb;
+  --muted-foreground: #a8bfd2;
+  background-color: #02060d;
+  background-image:
+    radial-gradient(circle at 14% 23%, rgba(202, 229, 255, .65) 0 .8px, transparent 1.7px),
+    radial-gradient(circle at 74% 41%, rgba(166, 209, 255, .55) 0 .8px, transparent 1.7px),
+    radial-gradient(circle at 42% 77%, rgba(202, 229, 255, .4) 0 .7px, transparent 1.6px),
+    linear-gradient(135deg, transparent 49.8%, rgba(7, 135, 255, .24) 50%, transparent 50.4%),
+    linear-gradient(45deg, transparent 49.8%, rgba(7, 135, 255, .14) 50%, transparent 50.4%),
+    radial-gradient(ellipse at 72% 15%, #0a1829 0%, #030810 48%, #010308 100%);
+  background-size: 360px 320px, 470px 380px, 530px 450px, 470px 300px, 640px 460px, 100% 100%;
+  background-attachment: local;
+  color: var(--foreground);
+}
+/* Restore dark text inside light cards while keeping headings legible on the field. */
+.crm-main :is([data-slot="card"], .bg-card, .dashboard-panel, .kpi-card, .glass) {
+  --foreground: #11223a;
+  --muted-foreground: #62758e;
+}
+.dark .crm-main :is([data-slot="card"], .bg-card, .dashboard-panel, .kpi-card, .glass) {
+  --foreground: #e8f0f8;
+  --muted-foreground: #a3b9cb;
+}
+.dashboard-welcome p { color: #afc5d7; }
+
+/* Sidebar lockup matches the sign-in wordmark at navigation scale. */
+.crm-sidebar-brand { min-height: 94px; height: auto; padding: 20px 20px 18px; align-items: flex-start; }
+.crm-sidebar-wordmark { display: inline-block; color: #fff; font: 400 35px/1 YbryxWordmark, sans-serif; letter-spacing: .065em; }
+.crm-sidebar-brand .crm-sidebar-wordmark small { display: flex; justify-content: center; align-items: center; gap: 5px; margin-top: 8px; color: #c2d8e8; font: 500 8px/1.3 Arial, sans-serif; letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; }
+.crm-sidebar-wordmark small::before { content: ''; flex: 0 0 19px; height: 2px; background: linear-gradient(90deg, #12bfea, rgba(18, 191, 234, .2)); box-shadow: 0 0 10px rgba(8, 183, 232, .4); }
