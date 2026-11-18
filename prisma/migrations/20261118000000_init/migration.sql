@@ -236,7 +236,7 @@ CREATE TABLE "attachments" (
     "entityType" "TaggableEntityType" NOT NULL,
     "entityId" TEXT NOT NULL,
     "fileName" TEXT NOT NULL,
-    "fileUrl" TEXT NOT NULL,
+    "blobPathname" TEXT NOT NULL,
     "fileSize" INTEGER NOT NULL,
     "mimeType" TEXT NOT NULL,
     "uploadedById" TEXT NOT NULL,
@@ -316,6 +316,9 @@ CREATE INDEX "tag_assignments_entityType_entityId_idx" ON "tag_assignments"("ent
 
 -- CreateIndex
 CREATE UNIQUE INDEX "tag_assignments_tagId_entityType_entityId_key" ON "tag_assignments"("tagId", "entityType", "entityId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "attachments_blobPathname_key" ON "attachments"("blobPathname");
 
 -- CreateIndex
 CREATE INDEX "attachments_entityType_entityId_idx" ON "attachments"("entityType", "entityId");

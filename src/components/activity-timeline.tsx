@@ -11,6 +11,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { MAX_UPLOAD_BYTES } from "@/lib/abuse-limits";
 
 type CallMetadata = {
   parentCallSid?: string;
@@ -286,20 +287,32 @@ function AttachmentsPanel({ entity }: { entity: { entityType: EntityType; entity
     const file = e.target.files?.[0];
     e.target.value = "";
     if (!file) return;
+    if (file.size > MAX_UPLOAD_BYTES) {
+      toast.error("File too large (max 4 MB)");
+      return;
+    }
     setUploading(true);
     try {
       const formData = new FormData();
       formData.append("file", file);
+      formData.append("entityType", entity.entityType);
+      formData.append("entityId", entity.entityId);
       const res = await fetch("/api/attachments/upload", { method: "POST", body: formData });
-      if (!res.ok) throw new Error("Upload failed");
+      if (!res.ok) {
+        if (res.status === 413) throw new Error("File too large");
+        let message = "Upload failed";
+        try {
+          const body = await res.json();
+          if (typeof body?.error === "string") message = body.error;
+        } catch {}
+        throw new Error(message);
+      }
       const uploaded = await res.json();
       createAttachment.mutate({
         entityType: entity.entityType,
         entityId: entity.entityId,
         fileName: uploaded.name,
-        fileUrl: uploaded.url,
-        fileSize: uploaded.size,
-        mimeType: uploaded.type,
+        blobPathname: uploaded.pathname,
       });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Upload failed");
@@ -311,7 +324,13 @@ function AttachmentsPanel({ entity }: { entity: { entityType: EntityType; entity
   return (
     <div className="flex flex-col gap-3">
       <div>
-        <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileChange} />
+        <input
+          ref={fileInputRef}
+          type="file"
+          className="hidden"
+          accept=".pdf,.png,.jpg,.jpeg,.docx,.xlsx,.csv,.txt"
+          onChange={handleFileChange}
+        />
         <Button
           size="sm"
           variant="outline"
@@ -330,7 +349,7 @@ function AttachmentsPanel({ entity }: { entity: { entityType: EntityType; entity
           {attachments.data.map((file) => (
             <div key={file.id} className="flex items-center justify-between gap-2 rounded-md bg-card p-3">
               <a
-                href={file.fileUrl}
+                href={`/api/attachments/${file.id}/download`}
                 target="_blank"
                 rel="noreferrer"
                 className="truncate text-sm text-card-foreground hover:text-accent-foreground"

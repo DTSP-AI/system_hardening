@@ -6,8 +6,10 @@ import { Paperclip, Download, Trash2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { trpc } from "@/lib/trpc/client";
 import { Button } from "@/components/ui/button";
+import { MAX_UPLOAD_BYTES } from "@/lib/abuse-limits";
 import { useCurrentRole } from "@/lib/hooks/use-current-role";
 
+const ACCEPT = ".pdf,.png,.jpg,.jpeg,.docx,.xlsx,.csv,.txt";
 const ENTITY_TYPES = ["CONTACT", "COMPANY", "DEAL", "LEAD"] as const;
 export type AttachmentEntityType = (typeof ENTITY_TYPES)[number];
 
@@ -52,24 +54,36 @@ export function AttachmentsList({
     const file = e.target.files?.[0];
     e.target.value = "";
     if (!file) return;
+    if (file.size > MAX_UPLOAD_BYTES) {
+      toast.error("File too large (max 4 MB)");
+      return;
+    }
 
     setIsUploading(true);
     try {
       const formData = new FormData();
       formData.append("file", file);
+      formData.append("entityType", entityType);
+      formData.append("entityId", entityId);
       const res = await fetch("/api/attachments/upload", { method: "POST", body: formData });
-      if (!res.ok) throw new Error("Upload failed");
+      if (!res.ok) {
+        if (res.status === 413) throw new Error("File too large");
+        let message = "Upload failed";
+        try {
+          const body = await res.json();
+          if (typeof body?.error === "string") message = body.error;
+        } catch {}
+        throw new Error(message);
+      }
       const uploaded = await res.json();
       createAttachment.mutate({
-        entityType,
-        entityId,
+        entityType: entityType,
+        entityId: entityId,
         fileName: uploaded.name,
-        fileUrl: uploaded.url,
-        fileSize: uploaded.size,
-        mimeType: uploaded.type,
+        blobPathname: uploaded.pathname,
       });
-    } catch {
-      toast.error("Upload failed");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Upload failed");
     } finally {
       setIsUploading(false);
     }
@@ -83,6 +97,7 @@ export function AttachmentsList({
           ref={fileInputRef}
           type="file"
           className="hidden"
+          accept={ACCEPT}
           onChange={handleFileChange}
           disabled={isUploading}
         />
@@ -115,7 +130,7 @@ export function AttachmentsList({
               </div>
               <div className="flex shrink-0 items-center gap-1">
                 <Button size="icon-sm" variant="ghost" asChild>
-                  <a href={a.fileUrl} target="_blank" rel="noopener noreferrer" download={a.fileName}>
+                  <a href={`/api/attachments/${a.id}/download`} target="_blank" rel="noopener noreferrer" download={a.fileName}>
                     <Download className="size-3.5" />
                   </a>
                 </Button>
