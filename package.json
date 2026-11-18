@@ -10,6 +10,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "test": "tsx --test tests/*.test.ts",
     "user:add": "tsx scripts/add-user.ts",
     "postinstall": "prisma generate"
   },

@@ -360,3 +360,12 @@ model AuditLog {
   @@map("audit_logs")
 }
 
+
+model RateLimitHit {
+  id        String   @id @default(cuid())
+  key       String
+  createdAt DateTime @default(now())
+
+  @@index([key, createdAt])
+  @@map("rate_limit_hits")
+}
