@@ -223,7 +223,7 @@
   semantic tokens, so it reads the same across every theme variant).
 */
 .status-bar {
-  background: var(--navy);
+  background: color-mix(in srgb, var(--navy) 60%, transparent);
   color: #ffffff;
 }
 
