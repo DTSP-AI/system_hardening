@@ -614,3 +614,10 @@
 
 /* Show the wave video without a tint. */
 .signin-circuit::before { display: none; }
+
+/* Lift the message to create breathing room above the opportunity card. */
+.signin-message { margin-top: clamp(38px, 6vh, 68px); }
+@media (max-width: 900px) { .signin-message { margin-top: 32px; } }
+
+/* A light frosted layer softens the wave without hiding its movement. */
+.signin-circuit::before { display: block; position: absolute; inset: 0; z-index: 1; content: ''; background: rgba(4, 14, 27, .12); backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px); }
