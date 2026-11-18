@@ -733,3 +733,22 @@
 .dashboard-welcome p { color: #61788e; }
 .dark .crm-main { --foreground: #e8f0f8; --muted-foreground: #a3b9cb; background: #10263a; }
 .dark .dashboard-welcome p { color: #a3b9cb; }
+
+/* Compact, combined production workspace. */
+.production-dashboard { gap: 12px; }
+.production-dashboard .kpi-card { min-height: 88px; padding: 13px; }
+.production-dashboard .kpi-icon { width: 36px; height: 36px; }
+.production-dashboard .kpi-copy strong { font-size: 21px; }
+.production-dashboard .dashboard-panel-heading { padding: 13px 15px 8px; }
+.production-dashboard .dashboard-panel-body { padding: 8px 15px 14px; }
+.production-dashboard .panel-title-icon { width: 34px; height: 34px; }
+.production-dashboard .recent-leads th, .production-dashboard .recent-leads td { padding: 8px 9px; }
+.production-chart-grid { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr); gap: 12px; align-items: start; }
+.production-weekly-chart svg { max-height: 190px; }
+.production-records { display: flex; flex-wrap: wrap; gap: 8px; }
+.production-record { display: flex; align-items: center; gap: 8px; padding: 8px 11px; border: 1px solid var(--border); border-radius: 8px; background: var(--card); color: var(--card-foreground); font-size: 12px; }
+.production-record svg { color: #0784b9; }
+.production-record strong { font-size: 13px; }
+.production-record:hover { border-color: #62c6e5; }
+@media (max-width: 1250px) { .production-chart-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .production-chart-grid > :first-child { grid-column: 1 / -1; } }
+@media (max-width: 760px) { .production-chart-grid { grid-template-columns: 1fr; } .production-chart-grid > :first-child { grid-column: auto; } }

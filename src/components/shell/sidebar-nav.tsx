@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  LayoutDashboard,
   Users,
   Building2,
   DollarSign,
@@ -17,7 +16,6 @@ import { cn } from "@/lib/utils";
 import { useCurrentRole } from "@/lib/hooks/use-current-role";
 
 const CORE_NAV_ITEMS = [
-  { href: "/", label: "Overview", icon: LayoutDashboard, chip: "var(--viz-blue)" },
   { href: "/priorities", label: "Priorities", icon: CheckSquare, chip: "var(--viz-aqua)" },
   { href: "/production", label: "Production", icon: BarChart3, chip: "var(--viz-violet)" },
   { href: "/prospecting", label: "Prospecting", icon: Radar, chip: "var(--viz-violet)" },
