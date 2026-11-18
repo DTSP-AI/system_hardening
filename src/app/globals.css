@@ -597,3 +597,6 @@
   .signin-message .signin-headline-main { font-size: clamp(26px, 8.2vw, 34px); }
   .signin-message .signin-headline-sub { font-size: clamp(17px, 5vw, 21px); }
 }
+
+/* Dim the moving background while preserving the blue wave. */
+.signin-circuit::before { background: linear-gradient(105deg, rgba(0, 4, 10, .82) 0%, rgba(1, 8, 18, .62) 48%, rgba(1, 7, 16, .68) 100%); }
