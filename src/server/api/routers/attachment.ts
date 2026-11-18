@@ -1,6 +1,6 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { head, BlobNotFoundError } from "@vercel/blob";
+import { del, head, BlobNotFoundError } from "@vercel/blob";
 import { Prisma } from "@generated/prisma/client";
 import { zId } from "@/lib/validation";
 import { MAX_UPLOAD_BYTES } from "@/lib/abuse-limits";
@@ -102,6 +102,13 @@ export const attachmentRouter = createTRPCRouter({
           message: "You don't have permission to do this.",
         });
       }
-      return ctx.db.attachment.delete({ where: { id: input.id } });
+      const deleted = await ctx.db.attachment.delete({ where: { id: input.id } });
+      // DB row first: worst case is an inaccessible orphan blob, never a dangling row.
+      try {
+        await del(attachment.blobPathname);
+      } catch (err) {
+        console.error("attachment.delete: blob delete failed", attachment.blobPathname, err);
+      }
+      return deleted;
     }),
 });
