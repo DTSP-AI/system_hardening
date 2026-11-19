@@ -3,9 +3,9 @@
 # Hand-written intent lives in CLAUDE.md frontmatter; this file records what is on disk.
 schema: contract-graph/1
 project: bos1
-inputs_hash: 090f856d71c4efe6753c87ea798e5df74bbb2b627da740bdb2143035b2143a0b
+inputs_hash: 54d7d1a65c0a28a4c3afbd0dbe5dcf61d838dc15110748801fc67c1867325eba
 counts:
-  contracts: 10
+  contracts: 11
   source_files: 186
   modules: 4
   problems: 0
@@ -108,6 +108,10 @@ contracts:
   referenced_by:
   - CLAUDE.md
   - docs/HEADLESS_PLAN.md
+- path: docs/hardening/HANDOFF.md
+  kind: doc
+  status: active
+  graph: true
 - path: docs/hardening/RELEASE.md
   kind: doc
   status: active
