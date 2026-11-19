@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowUpRight, BarChart3, Clock3, PieChart, Plus, UsersRound, Building2, BriefcaseBusiness } from "lucide-react";
+import { ArrowUpRight, BarChart3, Clock3, PieChart, UsersRound, Building2, BriefcaseBusiness } from "lucide-react";
 import { trpc } from "@/lib/trpc/client";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { CalendarSnapshot } from "@/components/dashboard/calendar-snapshot";
@@ -29,7 +29,7 @@ export default function ProductionPage() {
   ];
 
   return <div className="dashboard-page production-dashboard">
-    <div className="dashboard-welcome"><div><h1><Greeting /></h1><p>Production overview · Your pipeline, relationships, and activity in one place.</p></div><Link href="/leads" className="dashboard-action"><Plus size={16} /> Manage leads</Link></div>
+    <div className="dashboard-welcome"><div><h1><Greeting /></h1><p>Production overview · Your pipeline, relationships, and activity in one place.</p></div></div>
     <KpiTiles />
     <div className="production-records" aria-label="CRM record counts">{records.map(({label,value,loading,error,href,icon:Icon}) => <Link href={href} className="production-record" key={label}><Icon size={16}/><span>{label}</span><strong>{loading ? "…" : error ? "Unavailable" : value ?? 0}</strong><ArrowUpRight size={13}/></Link>)}</div>
     <div className="production-chart-grid">

@@ -799,3 +799,28 @@
   .production-chart-grid > :first-child { grid-column: auto; }
   .production-chart-grid > :nth-child(3) { grid-row: 2; }
 }
+
+/* Let Production start higher without the dark header band. */
+.crm-topbar-production { --foreground: #17334b; --muted-foreground: #60798d; background: #edf7fc; color: var(--foreground); border-bottom: 0; height: 48px; }
+.crm-topbar-production .crm-search { height: 34px; color: #506b81; background: rgba(255, 255, 255, .65); border-color: rgba(29, 85, 120, .16); }
+.crm-topbar-production .crm-search:hover { background: #fff; }
+.crm-topbar-production [data-variant="ghost"] { color: #284c65; }
+.crm-topbar-production [data-variant="ghost"]:hover { color: #075f8c; background: rgba(8, 160, 204, .1); }
+.crm-main-production { padding-top: 8px; }
+.dark .crm-topbar-production { --foreground: #e8f0f8; --muted-foreground: #a3b9cb; background: #10263a; }
+.dark .crm-topbar-production .crm-search { color: #b9cedd; background: rgba(255, 255, 255, .055); }
+.dark .crm-topbar-production [data-variant="ghost"] { color: #dcecf6; }
+
+/* Place Production controls beside the greeting instead of in a separate row. */
+.crm-body { position: relative; }
+.crm-topbar-production { position: absolute; top: 14px; right: 26px; z-index: 10; height: 46px; padding: 0; gap: 10px; background: transparent; }
+.crm-topbar-production .crm-search { width: 34px; flex: none; justify-content: center; padding: 0; }
+.crm-topbar-production .crm-search span, .crm-topbar-production .crm-search kbd { display: none; }
+.crm-main-production { padding-top: 26px; }
+.production-dashboard .dashboard-welcome { padding-right: 270px; min-height: 48px; }
+@media (max-width: 900px) {
+  .crm-topbar-production { position: relative; top: auto; right: auto; z-index: auto; height: 48px; padding: 0 18px; background: #edf7fc; }
+  .dark .crm-topbar-production { background: #10263a; }
+  .crm-main-production { padding-top: 8px; }
+  .production-dashboard .dashboard-welcome { padding-right: 0; min-height: 0; }
+}
