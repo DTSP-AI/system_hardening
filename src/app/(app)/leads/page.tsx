@@ -156,7 +156,18 @@ export default function LeadsPage() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-foreground">Leads</h1>
+        <div className="flex items-center gap-4">
+          <h1 className="text-2xl font-bold text-foreground">Leads</h1>
+          <div className="flex items-center gap-1 rounded-md border border-border p-0.5 text-sm">
+            <span className="rounded bg-accent-foreground/15 px-2.5 py-1 font-medium text-accent-foreground">List</span>
+            <Link
+              href="/leads/board"
+              className="rounded px-2.5 py-1 text-muted-foreground hover:text-foreground"
+            >
+              Board
+            </Link>
+          </div>
+        </div>
         <div className="flex items-center gap-2">
           <ExportCsvButton data={leads.data} columns={LEAD_CSV_COLUMNS} filename="leads.csv" />
           {isAdmin && (

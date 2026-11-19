@@ -9,6 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ActivityTimeline } from "@/components/activity-timeline";
 import { TagPicker } from "@/components/tag-picker";
 import { useCallStore } from "@/lib/stores/call-store";
@@ -49,6 +50,15 @@ export default function DealDetailPage({ params }: { params: Promise<{ id: strin
   const utils = trpc.useUtils();
   const deal = trpc.deal.byId.useQuery({ id });
   const requestCall = useCallStore((s) => s.requestCall);
+
+  const stages = trpc.pipelineStage.list.useQuery();
+  const moveStage = trpc.deal.moveStage.useMutation({
+    onSuccess: () => {
+      utils.deal.byId.invalidate({ id });
+      toast.success("Stage updated");
+    },
+    onError: (err) => toast.error(err.message),
+  });
 
   const updateDeal = trpc.deal.update.useMutation({
     onSuccess: () => {
@@ -99,7 +109,25 @@ export default function DealDetailPage({ params }: { params: Promise<{ id: strin
           </div>
           <Separator className="my-4" />
           <div className="flex flex-col">
-            <Field label="Stage" value={deal.data.stage.name} />
+            <div className="flex flex-col gap-1.5 pb-3">
+              <span className="text-xs uppercase tracking-wide text-muted-foreground">Stage</span>
+              <Select
+                value={deal.data.stageId}
+                onValueChange={(stageId) => moveStage.mutate({ id, stageId })}
+                disabled={moveStage.isPending}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {(stages.data ?? []).map((s) => (
+                    <SelectItem key={s.id} value={s.id}>
+                      {s.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <Field
               label="Amount"
               value={deal.data.amount ? `$${Number(deal.data.amount).toLocaleString()}` : "—"}
