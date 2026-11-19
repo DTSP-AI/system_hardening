@@ -892,3 +892,25 @@
 /* Let the navigation and Overview header meet without a visible seam. */
 .crm-shell:has(.crm-topbar-overview) .crm-sidebar { border-right: 0; }
 .crm-topbar-overview { border-bottom: 0; }
+
+/* One shared field keeps the circuit lines continuous across the sidebar and header. */
+.crm-shell:has(.crm-topbar-overview) {
+  isolation: isolate;
+  background-color: #02060d;
+  background-image:
+    radial-gradient(circle at 8% 15%, rgba(202, 229, 255, .48) 0 .8px, transparent 1.6px),
+    radial-gradient(circle at 45% 7%, rgba(166, 209, 255, .4) 0 .8px, transparent 1.6px),
+    radial-gradient(circle at 82% 12%, rgba(202, 229, 255, .32) 0 .8px, transparent 1.6px),
+    linear-gradient(135deg, transparent 49.8%, rgba(7, 135, 255, .19) 50%, transparent 50.4%),
+    linear-gradient(45deg, transparent 49.8%, rgba(7, 135, 255, .1) 50%, transparent 50.4%),
+    radial-gradient(ellipse at 72% 20%, #0a1829 0%, #030810 55%, #010308 100%);
+  background-size: auto, auto, auto, 470px 300px, 640px 460px, auto;
+  background-position: center, center, center, 40% -130px, 78% 120px, center;
+  background-repeat: no-repeat;
+}
+.crm-shell:has(.crm-topbar-overview) > .app-backdrop { display: none; }
+.crm-shell:has(.crm-topbar-overview) .crm-sidebar,
+.crm-shell:has(.crm-topbar-overview) .crm-topbar-overview { background: transparent; border: 0; }
+@media (max-width: 760px) {
+  .crm-shell:has(.crm-topbar-overview) .crm-sidebar { background: #06111e; }
+}
