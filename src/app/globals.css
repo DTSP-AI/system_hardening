@@ -980,3 +980,17 @@
   .crm-topbar-production .crm-search kbd { display: none; }
   .crm-main-production { padding-top: 18px; }
 }
+
+/* Align Production's greeting and search with the Overview header. */
+.production-intro { text-align: center; color: var(--muted-foreground); font-size: 14px; margin: 0; }
+@media (min-width: 901px) {
+  .crm-topbar-greeting { display: grid; grid-template-columns: minmax(180px, 1fr) minmax(220px, 420px) minmax(220px, 1fr); }
+  .crm-topbar-greeting .crm-search { width: 100%; transform: translateX(-24px); }
+  .crm-topbar-greeting .crm-top-actions { justify-self: end; }
+}
+@media (max-width: 900px) {
+  .crm-topbar-greeting { gap: 10px; }
+  .crm-topbar-greeting .crm-header-greeting { flex: 1; }
+  .crm-topbar-greeting .crm-search { flex: none; width: 36px; padding: 0; justify-content: center; }
+  .crm-topbar-greeting .crm-search span, .crm-topbar-greeting .crm-search kbd { display: none; }
+}

@@ -6,7 +6,6 @@ import { trpc } from "@/lib/trpc/client";
 import { KpiTiles } from "@/components/dashboard/kpi-tiles";
 import { PipelineChart } from "@/components/dashboard/pipeline-chart";
 import { RecentLeads } from "@/components/dashboard/recent-leads";
-import { Greeting } from "@/components/dashboard/greeting";
 import { PipelineFunnel } from "@/components/pipeline-funnel";
 import { PipelineDonut } from "@/components/pipeline-donut";
 
@@ -24,7 +23,7 @@ export default function ProductionPage() {
   ];
 
   return <div className="dashboard-page production-dashboard">
-    <div className="dashboard-welcome"><div><h1><Greeting /></h1><p>Production overview · Your pipeline and lead activity in one place.</p></div></div>
+    <p className="production-intro">Production overview · Your pipeline and lead activity in one place.</p>
     <KpiTiles />
     <div className="production-records" aria-label="CRM record counts">{records.map(({label,value,loading,error,href,icon:Icon}) => <Link href={href} className="production-record" key={label}><Icon size={16}/><span>{label}</span><strong>{loading ? "…" : error ? "Unavailable" : value ?? 0}</strong><ArrowUpRight size={13}/></Link>)}</div>
     <div className="production-chart-grid">
