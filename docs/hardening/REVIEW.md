@@ -22,7 +22,9 @@ live path through the Clerk middleware, Neon and Resend behavior.
 
 ## Findings
 
-- RED none found. No path runs a tool without a valid key, and every tool checks the key's scope before any work.
+The reviewer found nothing at the highest severity: no path runs a tool without a valid key,
+and every tool checks the key's scope before any work.
+
 - ORANGE src/server/services/idempotency.ts:20 a key reused with different arguments returned the earlier result — fixed: the key is bound to a hash of its arguments, a mismatch returns `conflict` (test: "an idempotency key reused with different arguments is refused")
 - ORANGE src/server/services/deal-stage.ts:53 a stage move racing a convert-to-account could reopen a converted deal — fixed: both paths lock the deal row first; conversion moved into the same service (test: "a stage move racing a convert-to-account never leaves an account on a deal that is not Won")
 - ORANGE src/server/services/email-send.ts:71 the provider call had no timeout, so a hung provider left the row "sending" — fixed: 20 second timeout in src/lib/email.ts, and the timeline shows a row still "sending" after two minutes as "Delivery unconfirmed"
