@@ -2,7 +2,6 @@
 
 import { trpc } from "@/lib/trpc/client";
 import { Skeleton } from "@/components/ui/skeleton";
-import { CalendarClock } from "lucide-react";
 
 export function CalendarSnapshot() {
   const upcoming = trpc.activity.upcoming.useQuery();
@@ -17,15 +16,26 @@ export function CalendarSnapshot() {
     );
   }
 
+  if (upcoming.isError) {
+    return <p className="py-3 text-xs text-muted-foreground">Unable to load upcoming meetings.</p>;
+  }
+
   const meetings = upcoming.data ?? [];
 
   if (meetings.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center gap-1.5 py-3 text-xs text-muted-foreground">
-        <CalendarClock className="size-5" />
-        No upcoming meetings
-      </div>
-    );
+    const examples = [
+      { title: "Discovery call", detail: "Alex Morgan · Example", time: "Mon · 9:30 AM" },
+      { title: "Strategy review", detail: "Taylor Reed · Example", time: "Mon · 1:00 PM" },
+      { title: "Team check-in", detail: "Jordan Lee · Example", time: "Tue · 10:00 AM" },
+      { title: "Follow-up meeting", detail: "Casey Brooks · Example", time: "Wed · 2:30 PM" },
+    ];
+    return <div className="flex flex-col gap-1.5">
+      <p className="pb-1 text-[11px] text-muted-foreground">Example meetings · No upcoming meetings scheduled</p>
+      {examples.map((meeting) => <div key={meeting.title} className="flex items-center justify-between gap-3 rounded-md border border-border bg-muted/30 px-2 py-1.5">
+        <div className="flex flex-col"><span className="text-xs font-medium text-card-foreground">{meeting.title}</span><span className="text-[11px] text-muted-foreground">{meeting.detail}</span></div>
+        <span className="mono-num shrink-0 text-[11px] text-muted-foreground">{meeting.time}</span>
+      </div>)}
+    </div>;
   }
 
   return (

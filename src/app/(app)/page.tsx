@@ -1,6 +1,5 @@
-import { CalendarDays, CheckSquare, Phone, Bell } from "lucide-react";
+import { CalendarDays, Phone, Bell } from "lucide-react";
 import { TodoBoard } from "@/components/dashboard/todo-board";
-import { MyTasks } from "@/components/dashboard/my-tasks";
 import { ActivityFeed } from "@/components/dashboard/activity-feed";
 import { CalendarSnapshot } from "@/components/dashboard/calendar-snapshot";
 import { PhoneWidget } from "@/components/dashboard/phone-widget";
@@ -15,8 +14,7 @@ export default function OverviewPage() {
       </div>
       <div className="overview-priority-side">
       <section className="dashboard-panel"><div className="dashboard-panel-heading"><div className="panel-title-icon"><Phone size={18}/></div><div><h2>Phone</h2><p>Start a call</p></div></div><div className="dashboard-panel-body"><PhoneWidget /></div></section>
-      <section className="dashboard-panel"><div className="dashboard-panel-heading"><div className="panel-title-icon"><Bell size={18}/></div><div><h2>Notifications &amp; activity</h2><p>Recent updates across your CRM</p></div></div><div className="dashboard-panel-body"><h3 className="overview-feed-label">Notifications</h3><NotificationsPanel /><h3 className="overview-feed-label overview-feed-divider">Recent activity</h3><ActivityFeed /></div></section>
-      <section className="overview-tasks"><div className="overview-section-label"><CheckSquare size={17}/><h2>My tasks</h2></div><MyTasks /></section>
+      <section className="dashboard-panel overview-activity-panel"><div className="dashboard-panel-heading"><div className="panel-title-icon"><Bell size={18}/></div><div><h2>Notifications &amp; activity</h2><p>Recent updates across your CRM</p></div></div><div className="dashboard-panel-body"><h3 className="overview-feed-label">Notifications</h3><NotificationsPanel /><h3 className="overview-feed-label overview-feed-divider">Recent activity</h3><ActivityFeed /></div></section>
       </div>
     </div>
   </div>;

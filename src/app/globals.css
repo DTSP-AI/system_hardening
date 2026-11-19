@@ -1023,3 +1023,11 @@
 
 .overview-feed-label { margin-bottom: 10px; font-size: 12px; font-weight: 700; color: var(--card-foreground); }
 .overview-feed-divider { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border); }
+
+/* Match the activity panel's bottom edge to the schedule and matrix column. */
+@media (min-width: 901px) {
+  .overview-priority-layout { align-items: stretch; }
+  .overview-priority-side { grid-template-rows: auto minmax(0, 1fr); height: 100%; min-height: 0; }
+  .overview-activity-panel { display: flex; flex-direction: column; min-height: 0; }
+  .overview-activity-panel .dashboard-panel-body { min-height: 0; overflow-y: auto; }
+}
