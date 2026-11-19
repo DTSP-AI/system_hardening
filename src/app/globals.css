@@ -873,3 +873,4 @@
 @media (min-width: 901px) {
   .crm-topbar-overview { grid-template-columns: minmax(180px, 1fr) minmax(220px, 420px) minmax(220px, 1fr); }
 }
+.production-dashboard .dashboard-welcome p { text-align: center; }
