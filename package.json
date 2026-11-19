@@ -17,7 +17,8 @@
     "postinstall": "prisma generate",
     "typecheck": "tsc --noEmit",
     "test:unit": "tsx --test tests/*.test.ts",
-    "test:server": "tsx scripts/test-db.ts && tsx --test --test-concurrency=1 tests/server/*.test.ts"
+    "test:server": "tsx scripts/test-db.ts && tsx --test --test-concurrency=1 tests/server/*.test.ts",
+    "cli": "tsx scripts/bos1-cli.ts"
   },
   "dependencies": {
     "@clerk/nextjs": "^7.5.17",

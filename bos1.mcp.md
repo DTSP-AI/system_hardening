@@ -31,7 +31,7 @@ tools:
   - { name: bos1_move_deal_stage, scope: bos1:write, readOnly: false, destructive: false, idempotent: true, openWorld: false, errors: [forbidden, not_found, conflict] }
   - { name: bos1_convert_lead, scope: bos1:write, readOnly: false, destructive: true, idempotent: true, openWorld: false, errors: [forbidden, not_found, conflict, validation_error] }
 clients: [claude-code]
-cli: none
+cli: scripts/bos1-cli.ts
 relationships:
   governed_by: [CLAUDE.md]
   implemented_by: [src/app/api/mcp/route.ts]
@@ -275,6 +275,13 @@ deal made the first time. Scope `bos1:write`.
 **Returns:** `{ "success": true, "data": { "contact": { "id": "..." }, "deal": { "id": "..." } } }`
 
 **Errors:** forbidden, not_found, conflict, validation_error (no open pipeline stage exists)
+
+## Command line client
+
+`npm run cli -- <command>` calls these same tools over HTTP. It needs `BOS1_URL` and
+`BOS1_API_KEY` and never touches the database. Run `npm run cli -- help` for the commands.
+Output is JSON; the exit code is 0 on success, 1 when a tool returns an error and 2 on an
+authentication or connection failure.
 
 ## Not available through this surface
 

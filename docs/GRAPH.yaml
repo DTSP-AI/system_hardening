@@ -3,10 +3,10 @@
 # Hand-written intent lives in CLAUDE.md frontmatter; this file records what is on disk.
 schema: contract-graph/1
 project: bos1
-inputs_hash: a40f90cc7ac4a4b69c352df4819f3c8f0244341e143bc57c815a3f95797db698
+inputs_hash: 2ba36bb03c2084aa130dd9176b4de162c91540f5bb828be7e1c0c53fe8b521a3
 counts:
   contracts: 7
-  source_files: 182
+  source_files: 185
   modules: 4
   problems: 0
   advisories: 0
@@ -16,12 +16,12 @@ declared:
   source: CLAUDE.md
   state: proposed
   nodes: 16
-  planned:
-  - node: cli
-    path: scripts/bos1-cli.ts
+  planned: []
   declared_not_observed:
   - - attachment_routes
     - user_auth
+  - - cli
+    - mcp_route
   - - mcp_route
     - machine_auth
   - - mcp_route
@@ -111,7 +111,7 @@ modules:
 - path: scripts
   languages:
   - typescript
-  files: 4
+  files: 6
   imports:
   - tests
   external:
@@ -162,8 +162,9 @@ modules:
 - path: tests
   languages:
   - typescript
-  files: 19
+  files: 20
   imports:
+  - scripts
   - src
   external:
   - '@/app'
@@ -176,6 +177,10 @@ files:
 - path: postcss.config.mjs
 - path: prisma.config.ts
 - path: scripts/add-user.ts
+- path: scripts/bos1-cli-lib.ts
+- path: scripts/bos1-cli.ts
+  imports:
+  - scripts/bos1-cli-lib.ts
 - path: scripts/seed-demo.ts
 - path: scripts/seed-priorities.ts
 - path: scripts/test-db.ts
@@ -362,6 +367,11 @@ files:
   imports:
   - tests/helpers/caller.ts
   - tests/helpers/db.ts
+- path: tests/server/cli.test.ts
+  imports:
+  - scripts/bos1-cli-lib.ts
+  - tests/helpers/db.ts
+  - tests/helpers/mcp.ts
 - path: tests/server/deal-stage.test.ts
   imports:
   - tests/helpers/caller.ts
