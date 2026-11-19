@@ -199,3 +199,35 @@ test("a write that fails stores no idempotency result, so it can be retried", as
   const retried = await mcpCall(key, "bos1_convert_lead", { idempotencyKey: "conv-retry", leadId: lead.id });
   assert.equal(retried.envelope.success, true);
 });
+
+test("an idempotency key reused with different arguments is refused, not answered with the old result", async () => {
+  const { key } = await mintApiKey(["write"]);
+  await seedStages();
+  const leadA = await testDb.lead.create({ data: { firstName: "A", lastName: "A" } });
+  const leadB = await testDb.lead.create({ data: { firstName: "B", lastName: "B" } });
+
+  const first = await mcpCall(key, "bos1_convert_lead", { idempotencyKey: "reused-key-1", leadId: leadA.id });
+  assert.equal(first.envelope.success, true);
+  const second = await mcpCall(key, "bos1_convert_lead", { idempotencyKey: "reused-key-1", leadId: leadB.id });
+  assert.equal(second.isError, true);
+  assert.equal(errorCode(second.envelope), "conflict");
+  assert.equal((await testDb.lead.findUniqueOrThrow({ where: { id: leadB.id } })).status, "NEW");
+});
+
+test("log_activity and convert_lead write audit rows attributed to the API key", async () => {
+  const { key, actorId } = await mintApiKey(["write"]);
+  await seedStages();
+  const lead = await testDb.lead.create({ data: { firstName: "Ada", lastName: "L" } });
+  await mcpCall(key, "bos1_log_activity", {
+    idempotencyKey: "audit-note-1",
+    type: "NOTE",
+    entityType: "LEAD",
+    entityId: lead.id,
+    body: "note",
+  });
+  await mcpCall(key, "bos1_convert_lead", { idempotencyKey: "audit-conv-1", leadId: lead.id });
+  const activityAudit = await testDb.auditLog.findFirst({ where: { entityType: "ACTIVITY" } });
+  assert.equal(activityAudit?.actorId, actorId);
+  const leadAudit = await testDb.auditLog.findFirst({ where: { entityType: "LEAD", entityId: lead.id } });
+  assert.equal(leadAudit?.actorId, actorId);
+});

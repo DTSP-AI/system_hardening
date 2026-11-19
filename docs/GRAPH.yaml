@@ -3,10 +3,10 @@
 # Hand-written intent lives in CLAUDE.md frontmatter; this file records what is on disk.
 schema: contract-graph/1
 project: bos1
-inputs_hash: bc4b96241b2cecbdb75ed543f03e17004313e1765cbb7091dfbfe6662002d98f
+inputs_hash: 818e72c24ee81220ad1a97a4b8f077f6fdae04bf8235ed601cda2eb767757903
 counts:
-  contracts: 8
-  source_files: 185
+  contracts: 9
+  source_files: 186
   modules: 4
   problems: 0
   advisories: 0
@@ -108,6 +108,10 @@ contracts:
   referenced_by:
   - CLAUDE.md
   - docs/HEADLESS_PLAN.md
+- path: docs/hardening/REVIEW.md
+  kind: doc
+  status: active
+  graph: true
 - path: docs/hardening/SPEC.md
   kind: doc
   status: active
@@ -181,7 +185,7 @@ modules:
 - path: tests
   languages:
   - typescript
-  files: 20
+  files: 21
   imports:
   - scripts
   - src
@@ -397,6 +401,10 @@ files:
   - tests/helpers/db.ts
 - path: tests/server/harness.test.ts
   imports:
+  - tests/helpers/db.ts
+- path: tests/server/isolation.test.ts
+  imports:
+  - tests/helpers/caller.ts
   - tests/helpers/db.ts
 - path: tests/server/lead-convert.test.ts
   imports:

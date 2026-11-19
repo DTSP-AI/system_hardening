@@ -26,8 +26,8 @@ tools:
   - { name: bos1_get_account, scope: bos1:read, readOnly: true, destructive: false, idempotent: true, openWorld: false, errors: [forbidden, not_found] }
   - { name: bos1_list_pipeline_stages, scope: bos1:read, readOnly: true, destructive: false, idempotent: true, openWorld: false, errors: [forbidden] }
   - { name: bos1_list_activities, scope: bos1:read, readOnly: true, destructive: false, idempotent: true, openWorld: false, errors: [forbidden, validation_error] }
-  - { name: bos1_create_lead, scope: bos1:write, readOnly: false, destructive: false, idempotent: true, openWorld: false, errors: [forbidden, validation_error] }
-  - { name: bos1_log_activity, scope: bos1:write, readOnly: false, destructive: false, idempotent: true, openWorld: false, errors: [forbidden, not_found, validation_error] }
+  - { name: bos1_create_lead, scope: bos1:write, readOnly: false, destructive: false, idempotent: true, openWorld: false, errors: [forbidden, validation_error, conflict] }
+  - { name: bos1_log_activity, scope: bos1:write, readOnly: false, destructive: false, idempotent: true, openWorld: false, errors: [forbidden, not_found, validation_error, conflict] }
   - { name: bos1_move_deal_stage, scope: bos1:write, readOnly: false, destructive: false, idempotent: true, openWorld: false, errors: [forbidden, not_found, conflict] }
   - { name: bos1_convert_lead, scope: bos1:write, readOnly: false, destructive: true, idempotent: true, openWorld: false, errors: [forbidden, not_found, conflict, validation_error] }
 clients: [claude-code]
@@ -205,7 +205,8 @@ List the activity timeline of one record, newest first: notes, tasks, calls, ema
 Every write tool needs the Write permission and an `idempotencyKey`: a string of 8 to 128
 characters that you choose, unique to the change you intend. If a call is repeated with the
 same key (a retry, a timeout, a duplicate request), the server returns the first result and
-changes nothing. Keys are scoped to the API key and the tool. A write that fails stores
+changes nothing. A key belongs to the arguments it was first used with: the same key with
+different arguments returns `conflict`. Keys are scoped to the API key and the tool. A write that fails stores
 nothing, so it can be retried with the same key. Every write is recorded in the audit log
 under `apikey:<key id>`.
 

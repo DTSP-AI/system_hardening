@@ -127,3 +127,15 @@ test("activities for a record are listed newest first", async () => {
   );
   assert.equal(page.items.length, 2);
 });
+
+test("GET and DELETE without a valid key get 401 too", async () => {
+  const { GET, DELETE } = await import("@/app/api/mcp/route");
+  for (const [method, fn] of [["GET", GET], ["DELETE", DELETE]] as const) {
+    const none = await fn(new Request("http://localhost/api/mcp", { method }));
+    assert.equal(none.status, 401, `${method} with no key`);
+    const bad = await fn(
+      new Request("http://localhost/api/mcp", { method, headers: { authorization: "Bearer bos1_" + "q".repeat(32) } }),
+    );
+    assert.equal(bad.status, 401, `${method} with an unknown key`);
+  }
+});

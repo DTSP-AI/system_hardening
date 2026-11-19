@@ -273,7 +273,7 @@ const handler = createMcpHandler(
         const actorId = gate.principal.actorId;
         return guarded(async () =>
           ok(
-            await runIdempotent(prisma, { principal: actorId, tool: "bos1_create_lead", key }, (tx) =>
+            await runIdempotent(prisma, { principal: actorId, tool: "bos1_create_lead", key }, input, (tx) =>
               createLead(tx, actorId, input),
             ),
           ),
@@ -302,7 +302,7 @@ const handler = createMcpHandler(
         const actorId = gate.principal.actorId;
         return guarded(async () =>
           ok(
-            await runIdempotent(prisma, { principal: actorId, tool: "bos1_log_activity", key }, (tx) =>
+            await runIdempotent(prisma, { principal: actorId, tool: "bos1_log_activity", key }, { ...input, dueDate }, (tx) =>
               logActivity(tx, actorId, { ...input, dueDate: dueDate ? new Date(dueDate) : undefined }),
             ),
           ),
@@ -324,7 +324,7 @@ const handler = createMcpHandler(
         const actorId = gate.principal.actorId;
         return guarded(async () =>
           ok(
-            await runIdempotent(prisma, { principal: actorId, tool: "bos1_move_deal_stage", key }, async (tx) => {
+            await runIdempotent(prisma, { principal: actorId, tool: "bos1_move_deal_stage", key }, { dealId, stageId }, async (tx) => {
               const [deal] = await changeDealStage(tx, { actorId, dealIds: [dealId], stageId });
               if (!deal) throw new TRPCError({ code: "NOT_FOUND", message: "Deal not found" });
               return deal;
@@ -348,7 +348,7 @@ const handler = createMcpHandler(
         const actorId = gate.principal.actorId;
         return guarded(async () =>
           ok(
-            await runIdempotent(prisma, { principal: actorId, tool: "bos1_convert_lead", key }, (tx) =>
+            await runIdempotent(prisma, { principal: actorId, tool: "bos1_convert_lead", key }, { leadId }, (tx) =>
               convertLead(tx, { actorId, leadId }),
             ),
           ),

@@ -93,3 +93,19 @@ test("moving back from Won to an open stage reopens the deal", async () => {
   assert.equal(moved.status, "OPEN");
   assert.equal(moved.closedAt, null);
 });
+
+test("a stage move racing a convert-to-account never leaves an account on a deal that is not Won", async () => {
+  const { api, stages } = await setup();
+  for (let i = 0; i < 12; i++) {
+    const deal = await api.deal.create({ name: `Race ${i}`, stageId: stages.won.id });
+    await Promise.allSettled([
+      api.deal.convertToAccount({ id: deal.id }),
+      api.deal.moveStage({ id: deal.id, stageId: stages.open.id }),
+    ]);
+    const after = await testDb.deal.findUniqueOrThrow({ where: { id: deal.id }, include: { account: true } });
+    if (after.account) {
+      assert.equal(after.status, "WON", `deal ${i} has an account but status ${after.status}`);
+      assert.equal(after.stageId, stages.won.id);
+    }
+  }
+});

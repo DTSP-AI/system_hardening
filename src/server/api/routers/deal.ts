@@ -2,7 +2,11 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { zId, zName, zShort, zLong, zIdArray, zCustomFields } from "@/lib/validation";
 import { createTRPCRouter, authedProcedure, adminProcedure } from "@/server/api/trpc";
-import { changeDealStage, stageFieldsForCreate } from "@/server/services/deal-stage";
+import {
+  changeDealStage,
+  convertDealToAccount,
+  stageFieldsForCreate,
+} from "@/server/services/deal-stage";
 import { logAudit, toJsonSafe } from "@/lib/audit";
 
 const DEAL_PRIORITIES = ["LOW", "MEDIUM", "HIGH"] as const;
@@ -91,34 +95,7 @@ export const dealRouter = createTRPCRouter({
 
   convertToAccount: authedProcedure
     .input(z.object({ id: zId }))
-    .mutation(async ({ ctx, input }) => {
-      const deal = await ctx.db.deal.findUniqueOrThrow({
-        where: { id: input.id },
-        include: { company: true, account: true },
-      });
-      if (deal.account) return deal.account;
-      if (deal.status !== "WON") {
-        throw new TRPCError({ code: "BAD_REQUEST", message: "Only won deals can be converted to an account" });
-      }
-      const account = await ctx.db.account.create({
-        data: {
-          name: deal.company?.name ?? deal.name,
-          contractValue: deal.amount,
-          sourceDealId: deal.id,
-          companyId: deal.companyId,
-          contactId: deal.contactId,
-          ownerId: deal.ownerId,
-        },
-      });
-      await logAudit(ctx.db, {
-        actorId: ctx.userId,
-        entityType: "ACCOUNT",
-        entityId: account.id,
-        action: "CREATE",
-        diff: toJsonSafe(account),
-      });
-      return account;
-    }),
+    .mutation(({ ctx, input }) => convertDealToAccount(ctx.db, { actorId: ctx.userId, dealId: input.id })),
 
   delete: adminProcedure
     .input(z.object({ id: zId }))

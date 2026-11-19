@@ -93,3 +93,21 @@ test("a write through the CLI with a read-only key is refused with exit 1", asyn
   assert.equal((JSON.parse(err) as { code: string }).code, "forbidden");
   assert.equal(await testDb.lead.count(), 0);
 });
+
+test("the CLI refuses to send the key over plain http to a remote host", async () => {
+  const out: string[] = [];
+  const err: string[] = [];
+  let requested = false;
+  const code = await runCli(["leads", "list"], {
+    env: { BOS1_URL: "http://crm.example.com", BOS1_API_KEY: "bos1_" + "k".repeat(32) },
+    fetch: async () => {
+      requested = true;
+      return new Response("{}");
+    },
+    stdout: (l) => out.push(l),
+    stderr: (l) => err.push(l),
+  });
+  assert.equal(code, EXIT.auth);
+  assert.equal(requested, false);
+  assert.match(err.join("\n"), /https/);
+});

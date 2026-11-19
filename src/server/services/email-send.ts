@@ -20,9 +20,10 @@ const defaultDeps: EmailSendDeps = { configured: () => getEmailConfig() !== null
  *
  * The provider call is never made inside a database transaction. The activity
  * is committed first with metadata.status "sending", so a send always has a
- * record; it is then marked "sent" or "failed". The provider receives an
- * idempotency key derived from the activity id, so a repeated request for the
- * same activity cannot deliver twice. `db` must be the bare client.
+ * record; it is then marked "sent", "failed" (the provider refused it) or
+ * "unconfirmed" (no answer, so it may have been sent). The provider receives
+ * an idempotency key derived from the activity id, so a repeated request for
+ * the same activity cannot deliver twice. `db` must be the bare client.
  */
 export async function sendContactEmail(
   db: PrismaClient,
@@ -66,6 +67,16 @@ export async function sendContactEmail(
     },
   });
 
+  /** Best effort: a failed status write must never hide the send's real outcome. */
+  const record = async (metadata: Record<string, string | undefined>): Promise<Activity | null> => {
+    try {
+      return await db.activity.update({ where: { id: pending.id }, data: { metadata } });
+    } catch (err) {
+      console.error("email.send: could not record status for activity", pending.id, err);
+      return null;
+    }
+  };
+
   let sent;
   try {
     sent = await deps.send({
@@ -75,22 +86,26 @@ export async function sendContactEmail(
       idempotencyKey: `email-activity/${pending.id}`,
     });
   } catch (err) {
-    await db.activity.update({
-      where: { id: pending.id },
-      data: { metadata: { ...base, status: "failed" } },
-    });
     if (err instanceof EmailNotConfiguredError) {
+      await record({ ...base, status: "failed" });
       throw new TRPCError({ code: "SERVICE_UNAVAILABLE", message: "Email isn't configured" });
     }
-    if (err instanceof EmailProviderError) {
-      console.error("email.send: provider error", err.cause);
+    if (err instanceof EmailProviderError && err.outcome === "rejected") {
+      await record({ ...base, status: "failed" });
+      console.error("email.send: provider rejected the message", err.cause);
       throw new TRPCError({ code: "BAD_GATEWAY", message: "Email provider rejected the message" });
     }
-    throw err;
+    // Network error, timeout or anything else: the message may have been sent.
+    await record({ ...base, status: "unconfirmed" });
+    console.error("email.send: outcome unknown", err);
+    throw new TRPCError({
+      code: "BAD_GATEWAY",
+      message: "Email delivery could not be confirmed. Check with the contact before sending it again.",
+    });
   }
 
-  return db.activity.update({
-    where: { id: pending.id },
-    data: { metadata: { ...base, status: "sent", from: sent.from, resendId: sent.resendId } },
-  });
+  const sentMetadata = { ...base, status: "sent", from: sent.from, resendId: sent.resendId };
+  // The provider accepted the message. If recording that fails, still report success:
+  // an error here would invite a resend, and the contact would get the email twice.
+  return (await record(sentMetadata)) ?? { ...pending, metadata: sentMetadata };
 }

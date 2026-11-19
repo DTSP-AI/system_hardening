@@ -144,6 +144,19 @@ export async function runCli(argv: string[], io: CliIo): Promise<number> {
     return EXIT.auth;
   }
 
+  let target: URL;
+  try {
+    target = new URL(base);
+  } catch {
+    io.stderr("BOS1_URL is not a valid URL: " + base);
+    return EXIT.auth;
+  }
+  const local = target.hostname === "localhost" || target.hostname === "127.0.0.1";
+  if (target.protocol !== "https:" && !local) {
+    io.stderr("Refusing to send the API key over an unencrypted connection. Use an https BOS1_URL.");
+    return EXIT.auth;
+  }
+
   const body =
     command.tool === null
       ? { jsonrpc: "2.0", id: 1, method: "tools/list", params: {} }

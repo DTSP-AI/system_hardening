@@ -1,3 +1,4 @@
+import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { zId, zName } from "@/lib/validation";
 import { logAudit } from "@/lib/audit";
@@ -58,18 +59,25 @@ export const apiKeyRouter = createTRPCRouter({
   revoke: adminProcedure
     .input(z.object({ id: zId }))
     .mutation(async ({ ctx, input }) => {
-      const revoked = await ctx.db.apiKey.update({
-        where: { id: input.id },
+      // Only a key that is not yet revoked is stamped, so a repeat keeps the first time.
+      const changed = await ctx.db.apiKey.updateMany({
+        where: { id: input.id, revokedAt: null },
         data: { revokedAt: new Date() },
+      });
+      const key = await ctx.db.apiKey.findUnique({
+        where: { id: input.id },
         select: { id: true, name: true, revokedAt: true },
       });
-      await logAudit(ctx.db, {
-        actorId: ctx.userId,
-        entityType: "API_KEY",
-        entityId: revoked.id,
-        action: "UPDATE",
-        diff: { revoked: true },
-      });
-      return revoked;
+      if (!key) throw new TRPCError({ code: "NOT_FOUND", message: "API key not found" });
+      if (changed.count === 1) {
+        await logAudit(ctx.db, {
+          actorId: ctx.userId,
+          entityType: "API_KEY",
+          entityId: key.id,
+          action: "UPDATE",
+          diff: { revoked: true },
+        });
+      }
+      return key;
     }),
 });

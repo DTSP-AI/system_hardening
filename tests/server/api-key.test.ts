@@ -99,3 +99,12 @@ test("a member cannot create a key; the list shows scopes and never the hash", a
   assert.deepEqual(list[0].scopes, ["read"]);
   assert.equal("hashedKey" in list[0], false);
 });
+
+test("revoking an unknown key is not found, and revoking twice keeps the first revocation and one audit row", async () => {
+  const { api, id } = await mintKey(["read"]);
+  await assert.rejects(api.apiKey.revoke({ id: "does-not-exist" }), /not found/i);
+  const first = await api.apiKey.revoke({ id });
+  const second = await api.apiKey.revoke({ id });
+  assert.deepEqual(second.revokedAt, first.revokedAt);
+  assert.equal(await testDb.auditLog.count({ where: { entityType: "API_KEY", entityId: id, action: "UPDATE" } }), 1);
+});
