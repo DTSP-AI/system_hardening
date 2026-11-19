@@ -25,6 +25,13 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import type { ApiKeyScope } from "@/lib/auth/api-key-scopes";
+
+const SCOPE_OPTIONS: Array<{ scope: ApiKeyScope; label: string; hint: string }> = [
+  { scope: "read", label: "Read", hint: "Search and view leads, deals, contacts, companies and accounts." },
+  { scope: "write", label: "Write", hint: "Create leads, log notes and tasks, move deals, convert leads. Includes read." },
+];
 
 export function ApiKeysPanel() {
   const utils = trpc.useUtils();
@@ -46,12 +53,14 @@ export function ApiKeysPanel() {
 
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
+  const [scopes, setScopes] = useState<ApiKeyScope[]>(["read"]);
   const [newKey, setNewKey] = useState<string | null>(null);
 
   function handleOpenChange(next: boolean) {
     setOpen(next);
     if (!next) {
       setName("");
+      setScopes(["read"]);
       setNewKey(null);
     }
   }
@@ -60,7 +69,7 @@ export function ApiKeysPanel() {
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <p className="text-sm text-muted-foreground">
-          Keys authenticate external integrations against this workspace&apos;s API.
+          Keys let external agents and integrations use this workspace through the MCP endpoint and CLI.
         </p>
         <Dialog open={open} onOpenChange={handleOpenChange}>
           <DialogTrigger asChild>
@@ -88,6 +97,28 @@ export function ApiKeysPanel() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                 />
+                <fieldset className="mt-3 flex flex-col gap-2">
+                  <legend className="mb-1 text-sm font-medium">Permissions</legend>
+                  {SCOPE_OPTIONS.map((option) => (
+                    <label key={option.scope} className="flex items-start gap-2 text-sm">
+                      <Checkbox
+                        className="mt-0.5"
+                        checked={scopes.includes(option.scope)}
+                        onCheckedChange={(checked) =>
+                          setScopes((current) =>
+                            checked === true
+                              ? [...new Set([...current, option.scope])]
+                              : current.filter((s) => s !== option.scope),
+                          )
+                        }
+                      />
+                      <span>
+                        <span className="font-medium">{option.label}</span>
+                        <span className="block text-muted-foreground">{option.hint}</span>
+                      </span>
+                    </label>
+                  ))}
+                </fieldset>
               </div>
             )}
             <DialogFooter>
@@ -95,8 +126,8 @@ export function ApiKeysPanel() {
                 <Button onClick={() => handleOpenChange(false)}>Done</Button>
               ) : (
                 <Button
-                  onClick={() => createKey.mutate({ name })}
-                  disabled={!name || createKey.isPending}
+                  onClick={() => createKey.mutate({ name, scopes })}
+                  disabled={!name || scopes.length === 0 || createKey.isPending}
                 >
                   Create
                 </Button>
@@ -120,6 +151,7 @@ export function ApiKeysPanel() {
             <TableHeader>
               <TableRow>
                 <TableHead>Name</TableHead>
+                <TableHead>Permissions</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Last used</TableHead>
                 <TableHead>Created</TableHead>
@@ -130,6 +162,9 @@ export function ApiKeysPanel() {
               {apiKeys.data?.map((key) => (
                 <TableRow key={key.id}>
                   <TableCell className="font-medium">{key.name}</TableCell>
+                  <TableCell className="text-muted-foreground">
+                    {key.scopes.length > 0 ? key.scopes.join(", ") : "None"}
+                  </TableCell>
                   <TableCell>
                     <Badge variant={key.revokedAt ? "destructive" : "default"}>
                       {key.revokedAt ? "Revoked" : "Active"}

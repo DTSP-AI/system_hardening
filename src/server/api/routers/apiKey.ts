@@ -1,15 +1,9 @@
 import { z } from "zod";
 import { zId, zName } from "@/lib/validation";
-import { randomBytes, createHash } from "crypto";
+import { logAudit } from "@/lib/audit";
+import { generateApiKey, hashApiKey } from "@/lib/auth/api-key";
+import { API_KEY_SCOPES } from "@/lib/auth/api-key-scopes";
 import { createTRPCRouter, adminProcedure } from "@/server/api/trpc";
-
-function generateKey() {
-  return `bos1_${randomBytes(24).toString("base64url")}`;
-}
-
-function hashKey(key: string) {
-  return createHash("sha256").update(key).digest("hex");
-}
 
 export const apiKeyRouter = createTRPCRouter({
   list: adminProcedure.query(({ ctx }) =>
@@ -18,6 +12,7 @@ export const apiKeyRouter = createTRPCRouter({
       select: {
         id: true,
         name: true,
+        scopes: true,
         createdByUserId: true,
         expiresAt: true,
         revokedAt: true,
@@ -28,15 +23,33 @@ export const apiKeyRouter = createTRPCRouter({
   ),
 
   create: adminProcedure
-    .input(z.object({ name: zName }))
+    .input(
+      z.object({
+        name: zName,
+        scopes: z
+          .array(z.enum(API_KEY_SCOPES))
+          .min(1, "Choose at least one permission")
+          .max(API_KEY_SCOPES.length),
+      }),
+    )
     .mutation(async ({ ctx, input }) => {
-      const key = generateKey();
+      const key = generateApiKey();
+      const scopes = [...new Set(input.scopes)];
       const apiKey = await ctx.db.apiKey.create({
         data: {
           name: input.name,
-          hashedKey: hashKey(key),
+          hashedKey: hashApiKey(key),
+          scopes,
           createdByUserId: ctx.userId,
         },
+      });
+      // The audit row never carries the key or its hash.
+      await logAudit(ctx.db, {
+        actorId: ctx.userId,
+        entityType: "API_KEY",
+        entityId: apiKey.id,
+        action: "CREATE",
+        diff: { name: apiKey.name, scopes },
       });
       // Raw key is only ever returned here -- only the hash is persisted.
       return { id: apiKey.id, key };
@@ -44,7 +57,19 @@ export const apiKeyRouter = createTRPCRouter({
 
   revoke: adminProcedure
     .input(z.object({ id: zId }))
-    .mutation(({ ctx, input }) =>
-      ctx.db.apiKey.update({ where: { id: input.id }, data: { revokedAt: new Date() } }),
-    ),
+    .mutation(async ({ ctx, input }) => {
+      const revoked = await ctx.db.apiKey.update({
+        where: { id: input.id },
+        data: { revokedAt: new Date() },
+        select: { id: true, name: true, revokedAt: true },
+      });
+      await logAudit(ctx.db, {
+        actorId: ctx.userId,
+        entityType: "API_KEY",
+        entityId: revoked.id,
+        action: "UPDATE",
+        diff: { revoked: true },
+      });
+      return revoked;
+    }),
 });

@@ -3,10 +3,10 @@
 # Hand-written intent lives in CLAUDE.md frontmatter; this file records what is on disk.
 schema: contract-graph/1
 project: bos1
-inputs_hash: 77f4817309e9639e84db353db8197a4b8e3a565d8cc493efd8682fe16de64c1d
+inputs_hash: d33c45de16b36ffa9a77a1698981028d79c672abc3d69863bb2fc9f162259d73
 counts:
   contracts: 6
-  source_files: 168
+  source_files: 171
   modules: 4
   problems: 0
   advisories: 0
@@ -19,8 +19,6 @@ declared:
   planned:
   - node: cli
     path: scripts/bos1-cli.ts
-  - node: machine_auth
-    path: src/lib/auth/api-key.ts
   - node: mcp_route
     path: src/app/api/mcp
   declared_not_observed:
@@ -119,7 +117,7 @@ modules:
 - path: src
   languages:
   - typescript
-  files: 146
+  files: 148
   imports: []
   external:
   - '@/components'
@@ -156,7 +154,7 @@ modules:
 - path: tests
   languages:
   - typescript
-  files: 14
+  files: 15
   imports:
   - src
   external:
@@ -274,6 +272,8 @@ files:
 - path: src/lib/attachments/entity.ts
 - path: src/lib/attachments/file-policy.ts
 - path: src/lib/audit.ts
+- path: src/lib/auth/api-key-scopes.ts
+- path: src/lib/auth/api-key.ts
 - path: src/lib/auth/app-user.ts
 - path: src/lib/csv.ts
 - path: src/lib/db.ts
@@ -338,6 +338,10 @@ files:
   imports:
   - tests/helpers/db.ts
 - path: tests/rate-limit.test.ts
+- path: tests/server/api-key.test.ts
+  imports:
+  - tests/helpers/caller.ts
+  - tests/helpers/db.ts
 - path: tests/server/deal-stage.test.ts
   imports:
   - tests/helpers/caller.ts

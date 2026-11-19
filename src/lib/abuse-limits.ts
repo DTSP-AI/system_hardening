@@ -22,4 +22,10 @@ export const UPLOAD_LIMITS: readonly LimitWindow[] = [
   { windowMs: DAY_MS, max: 300 },
 ];
 
+/** Requests per API key (MCP and CLI). Bounds a leaked key or a runaway agent. */
+export const API_KEY_LIMITS: readonly LimitWindow[] = [
+  { windowMs: 60_000, max: 300 },
+  { windowMs: HOUR_MS, max: 5000 },
+];
+
 export const MAX_UPLOAD_BYTES = 4 * 1024 * 1024;
