@@ -888,3 +888,7 @@
   background-position: center, center, 40% 48%, 78% 52%, center;
   background-repeat: no-repeat;
 }
+
+/* Let the navigation and Overview header meet without a visible seam. */
+.crm-shell:has(.crm-topbar-overview) .crm-sidebar { border-right: 0; }
+.crm-topbar-overview { border-bottom: 0; }
