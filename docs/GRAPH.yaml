@@ -3,10 +3,10 @@
 # Hand-written intent lives in CLAUDE.md frontmatter; this file records what is on disk.
 schema: contract-graph/1
 project: bos1
-inputs_hash: 7e1df4981a2927bca7ea2be6da7fcd7761180f6760856ba294757d3b94d9f96c
+inputs_hash: eba65c0422f74472e5b5ffd9a73d43d343b0498311ee1882d27c53bf0fab3e7f
 counts:
   contracts: 6
-  source_files: 158
+  source_files: 161
   modules: 4
   problems: 0
   advisories: 0
@@ -23,15 +23,17 @@ declared:
     path: src/lib/auth/api-key.ts
   - node: mcp_route
     path: src/app/api/mcp
-  - node: services
-    path: src/server/services
   declared_not_observed:
   - - attachment_routes
     - user_auth
   - - routers
     - db
   - - routers
+    - services
+  - - routers
     - trpc_core
+  - - services
+    - db
   - - trpc_core
     - user_auth
   - - trpc_route
@@ -117,7 +119,7 @@ modules:
 - path: src
   languages:
   - typescript
-  files: 141
+  files: 142
   imports: []
   external:
   - '@/components'
@@ -154,11 +156,12 @@ modules:
 - path: tests
   languages:
   - typescript
-  files: 9
+  files: 11
   imports:
   - src
   external:
   - '@/lib'
+  - '@/server'
   - '@prisma/adapter-pg'
 files:
 - path: eslint.config.mjs
@@ -314,16 +317,24 @@ files:
 - path: src/server/api/routers/tag.ts
 - path: src/server/api/routers/todo.ts
 - path: src/server/api/trpc.ts
+- path: src/server/services/deal-stage.ts
 - path: tests/csv.test.ts
   imports:
   - src/lib/csv.ts
 - path: tests/dial-policy.test.ts
 - path: tests/file-policy.test.ts
+- path: tests/helpers/caller.ts
+  imports:
+  - tests/helpers/db.ts
 - path: tests/helpers/db.ts
   imports:
   - tests/helpers/test-db-url.ts
 - path: tests/helpers/test-db-url.ts
 - path: tests/rate-limit.test.ts
+- path: tests/server/deal-stage.test.ts
+  imports:
+  - tests/helpers/caller.ts
+  - tests/helpers/db.ts
 - path: tests/server/harness.test.ts
   imports:
   - tests/helpers/db.ts

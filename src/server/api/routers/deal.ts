@@ -2,7 +2,7 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { zId, zName, zShort, zLong, zIdArray, zCustomFields } from "@/lib/validation";
 import { createTRPCRouter, authedProcedure, adminProcedure } from "@/server/api/trpc";
-import { notify } from "@/lib/notify";
+import { changeDealStage, stageFieldsForCreate } from "@/server/services/deal-stage";
 import { logAudit, toJsonSafe } from "@/lib/audit";
 
 const DEAL_PRIORITIES = ["LOW", "MEDIUM", "HIGH"] as const;
@@ -49,7 +49,8 @@ export const dealRouter = createTRPCRouter({
   create: authedProcedure
     .input(dealInput)
     .mutation(async ({ ctx, input }) => {
-      const created = await ctx.db.deal.create({ data: { ...input } });
+      const stage = await stageFieldsForCreate(ctx.db, input.stageId);
+      const created = await ctx.db.deal.create({ data: { ...input, ...stage } });
       await logAudit(ctx.db, {
         actorId: ctx.userId,
         entityType: "DEAL",
@@ -61,7 +62,8 @@ export const dealRouter = createTRPCRouter({
     }),
 
   update: authedProcedure
-    .input(dealInput.partial().extend({ id: zId }))
+    // No stageId here: a stage change is deal.moveStage (see services/deal-stage.ts).
+    .input(dealInput.omit({ stageId: true }).partial().extend({ id: zId }))
     .mutation(async ({ ctx, input }) => {
       const { id, ...data } = input;
       const updated = await ctx.db.deal.update({ where: { id }, data });
@@ -78,42 +80,12 @@ export const dealRouter = createTRPCRouter({
   moveStage: authedProcedure
     .input(z.object({ id: zId, stageId: zId }))
     .mutation(async ({ ctx, input }) => {
-      const converted = await ctx.db.account.findUnique({
-        where: { sourceDealId: input.id },
-        select: { id: true },
-      });
-      if (converted) {
-        throw new TRPCError({ code: "CONFLICT", message: "This deal was converted to an account and can no longer change stage" });
-      }
-      const stage = await ctx.db.pipelineStage.findUniqueOrThrow({
-        where: { id: input.stageId },
-      });
-      const deal = await ctx.db.deal.update({
-        where: { id: input.id },
-        data: {
-          stageId: input.stageId,
-          status: stage.isWon ? "WON" : stage.isLost ? "LOST" : "OPEN",
-          closedAt: stage.isWon || stage.isLost ? new Date() : null,
-        },
-      });
-
-      await logAudit(ctx.db, {
+      const [deal] = await changeDealStage(ctx.db, {
         actorId: ctx.userId,
-        entityType: "DEAL",
-        entityId: deal.id,
-        action: "UPDATE",
-        diff: { stageId: input.stageId, status: deal.status },
+        dealIds: [input.id],
+        stageId: input.stageId,
       });
-
-      if (deal.ownerId && deal.ownerId !== ctx.userId) {
-        await notify(ctx.db, {
-          userId: deal.ownerId,
-          type: "DEAL_STAGE_CHANGE",
-          title: `${deal.name} moved to ${stage.name}`,
-          linkHref: `/deals/${deal.id}`,
-        });
-      }
-
+      if (!deal) throw new TRPCError({ code: "NOT_FOUND", message: "Deal not found" });
       return deal;
     }),
 
@@ -182,29 +154,11 @@ export const dealRouter = createTRPCRouter({
   moveStageMany: authedProcedure
     .input(z.object({ ids: zIdArray, stageId: zId }))
     .mutation(async ({ ctx, input }) => {
-      const stage = await ctx.db.pipelineStage.findUniqueOrThrow({
-        where: { id: input.stageId },
+      const moved = await changeDealStage(ctx.db, {
+        actorId: ctx.userId,
+        dealIds: input.ids,
+        stageId: input.stageId,
       });
-      const status = stage.isWon ? "WON" : stage.isLost ? "LOST" : "OPEN";
-      const closedAt = stage.isWon || stage.isLost ? new Date() : null;
-
-      const deals = await ctx.db.deal.findMany({ where: { id: { in: input.ids } } });
-      await ctx.db.deal.updateMany({
-        where: { id: { in: input.ids } },
-        data: { stageId: input.stageId, status, closedAt },
-      });
-
-      for (const deal of deals) {
-        if (deal.ownerId && deal.ownerId !== ctx.userId) {
-          await notify(ctx.db, {
-            userId: deal.ownerId,
-            type: "DEAL_STAGE_CHANGE",
-            title: `${deal.name} moved to ${stage.name}`,
-            linkHref: `/deals/${deal.id}`,
-          });
-        }
-      }
-
-      return { count: deals.length };
+      return { count: moved.length };
     }),
 });
