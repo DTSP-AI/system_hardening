@@ -8,10 +8,12 @@ import { NotificationsPanel } from "@/components/dashboard/notifications-panel";
 
 export default function OverviewPage() {
   return <div className="dashboard-page overview-dashboard">
-    <TodoBoard />
-    <div className="overview-grid">
+    <div className="overview-priority-layout">
+      <div className="overview-priority-board"><TodoBoard /></div>
+      <div className="overview-priority-side">
       <section className="overview-tasks"><div className="overview-section-label"><CheckSquare size={17}/><h2>My tasks</h2></div><MyTasks /></section>
       <section className="dashboard-panel"><div className="dashboard-panel-heading"><div className="panel-title-icon"><Clock3 size={18}/></div><div><h2>Recent activity</h2><p>Latest updates across your CRM</p></div></div><div className="dashboard-panel-body"><ActivityFeed /></div></section>
+      </div>
     </div>
     <div className="overview-tools">
       <section className="dashboard-panel"><div className="dashboard-panel-heading"><div className="panel-title-icon"><CalendarDays size={18}/></div><div><h2>Upcoming schedule</h2><p>Your upcoming meetings</p></div></div><div className="dashboard-panel-body"><CalendarSnapshot /></div></section>

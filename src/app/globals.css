@@ -1008,3 +1008,12 @@
 @media (max-width: 760px) {
   .crm-sidebar-brand .crm-close { position: absolute; top: 12px; right: 10px; margin: 0; }
 }
+
+/* A compact quadrant board shares the first row with tasks and activity. */
+.overview-priority-layout { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; align-items: start; }
+.overview-priority-side { display: grid; gap: 14px; min-width: 0; }
+.overview-priority-board { min-width: 0; }
+.overview-priority-board [data-slot="card"] { --card-spacing: 12px; }
+.overview-priority-board [data-slot="card-content"] { gap: 8px; }
+.overview-priority-board [data-slot="card-content"] > div { padding: 8px; }
+@media (max-width: 900px) { .overview-priority-layout { grid-template-columns: 1fr; } }
