@@ -824,3 +824,7 @@
   .crm-main-production { padding-top: 8px; }
   .production-dashboard .dashboard-welcome { padding-right: 0; min-height: 0; }
 }
+
+/* A soft blue gradient adds depth without competing with workspace cards. */
+.crm-main { background: linear-gradient(135deg, #f6fbff 0%, #e8f5fc 48%, #d8edf8 100%); }
+.dark .crm-main { background: #10263a; }
