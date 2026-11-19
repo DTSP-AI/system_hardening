@@ -4,19 +4,19 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Users,
+  LayoutDashboard,
   Building2,
   DollarSign,
   ShieldCheck,
   BarChart3,
   UserPlus,
-  CheckSquare,
   Radar,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useCurrentRole } from "@/lib/hooks/use-current-role";
 
 const CORE_NAV_ITEMS = [
-  { href: "/priorities", label: "Priorities", icon: CheckSquare, chip: "var(--viz-aqua)" },
+  { href: "/", label: "Overview", icon: LayoutDashboard, chip: "var(--viz-blue)" },
   { href: "/production", label: "Production", icon: BarChart3, chip: "var(--viz-violet)" },
   { href: "/prospecting", label: "Prospecting", icon: Radar, chip: "var(--viz-violet)" },
   { href: "/leads", label: "Leads", icon: UserPlus, chip: "var(--viz-orange)" },
