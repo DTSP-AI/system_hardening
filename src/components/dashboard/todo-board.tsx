@@ -175,7 +175,7 @@ export function TodoBoard() {
           Current Priorities
         </CardTitle>
       </CardHeader>
-      <CardContent className="grid grid-cols-1 items-start gap-3 md:grid-cols-2 xl:grid-cols-4">
+      <CardContent className="grid grid-cols-1 items-start gap-3 md:grid-cols-2">
         {QUADRANTS.map((q) => (
           <div key={q.key} className="rounded-lg border border-border p-3">
             <QuadrantColumn
