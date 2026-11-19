@@ -850,3 +850,18 @@
   .overview-tools > :nth-child(2) { grid-column: 2; grid-row: 1; }
   .overview-tools > :nth-child(3) { grid-column: 2; grid-row: 2; }
 }
+
+/* Overview header: greeting left, centered search, workspace controls right. */
+@media (min-width: 901px) {
+  .crm-topbar-overview { display: grid; grid-template-columns: minmax(180px, 1fr) minmax(250px, 580px) minmax(180px, 1fr); }
+  .crm-topbar-overview .crm-search { width: 100%; }
+  .crm-topbar-overview .crm-top-actions { justify-self: end; }
+}
+.crm-header-greeting { min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.crm-header-greeting span { font-size: clamp(15px, 1.6vw, 21px); color: #f1f8fc; }
+@media (max-width: 900px) {
+  .crm-topbar-overview { gap: 10px; }
+  .crm-topbar-overview .crm-header-greeting { flex: 1; }
+  .crm-topbar-overview .crm-search { flex: none; width: 36px; padding: 0; justify-content: center; }
+  .crm-topbar-overview .crm-search span, .crm-topbar-overview .crm-search kbd { display: none; }
+}

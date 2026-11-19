@@ -1,5 +1,4 @@
 import { CalendarDays, CheckSquare, Clock3, Phone, Bell } from "lucide-react";
-import { Greeting } from "@/components/dashboard/greeting";
 import { TodoBoard } from "@/components/dashboard/todo-board";
 import { MyTasks } from "@/components/dashboard/my-tasks";
 import { ActivityFeed } from "@/components/dashboard/activity-feed";
@@ -9,7 +8,6 @@ import { NotificationsPanel } from "@/components/dashboard/notifications-panel";
 
 export default function OverviewPage() {
   return <div className="dashboard-page overview-dashboard">
-    <div className="dashboard-welcome"><div><h1><Greeting /></h1><p>Your priorities and workspace activity, together in one place.</p></div></div>
     <TodoBoard />
     <div className="overview-grid">
       <section className="overview-tasks"><div className="overview-section-label"><CheckSquare size={17}/><h2>My tasks</h2></div><MyTasks /></section>
