@@ -3,9 +3,9 @@
 # Hand-written intent lives in CLAUDE.md frontmatter; this file records what is on disk.
 schema: contract-graph/1
 project: bos1
-inputs_hash: 2ba36bb03c2084aa130dd9176b4de162c91540f5bb828be7e1c0c53fe8b521a3
+inputs_hash: bc4b96241b2cecbdb75ed543f03e17004313e1765cbb7091dfbfe6662002d98f
 counts:
-  contracts: 7
+  contracts: 8
   source_files: 185
   modules: 4
   problems: 0
@@ -76,6 +76,8 @@ contracts:
   - type: defers_to
     target: ~/.dtsp-engineering/ENGINEERING.md
     external: true
+  referenced_by:
+  - docs/HEADLESS_PLAN.md
 - path: README.md
   kind: readme
   graph: false
@@ -83,12 +85,29 @@ contracts:
   kind: doc
   version: 1.0.0
   graph: true
+  referenced_by:
+  - docs/HEADLESS_PLAN.md
+- path: docs/HEADLESS_PLAN.md
+  kind: doc
+  id: bos1-headless-plan
+  version: 1.0.0
+  status: shelved
+  scope: project (this repository)
+  graph: true
+  edges:
+  - type: defers_to
+    target: CLAUDE.md
+  - type: expands
+    target: bos1.mcp.md
+  - type: expands
+    target: docs/hardening/ARCHITECTURE.md
 - path: docs/hardening/ARCHITECTURE.md
   kind: architecture
   status: active
   graph: true
   referenced_by:
   - CLAUDE.md
+  - docs/HEADLESS_PLAN.md
 - path: docs/hardening/SPEC.md
   kind: doc
   status: active
