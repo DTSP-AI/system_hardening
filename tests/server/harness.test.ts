@@ -16,3 +16,13 @@ test("src/lib/db reuses the test client instead of creating a Neon client", asyn
   const { prisma } = await import("@/lib/db");
   assert.equal(prisma, testDb);
 });
+
+test("resetDb empties every application table between tests", async () => {
+  const stage = await testDb.pipelineStage.create({ data: { name: "New", sortOrder: 0 } });
+  await testDb.deal.create({ data: { name: "Acme", stageId: stage.id } });
+  await testDb.lead.create({ data: { firstName: "A", lastName: "B" } });
+  await resetDb();
+  assert.equal(await testDb.deal.count(), 0);
+  assert.equal(await testDb.pipelineStage.count(), 0);
+  assert.equal(await testDb.lead.count(), 0);
+});
