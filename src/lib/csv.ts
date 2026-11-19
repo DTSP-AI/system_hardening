@@ -5,7 +5,9 @@ export interface CsvColumn<T> {
 }
 
 function escapeCsvValue(value: unknown): string {
-  const s = value === null || value === undefined ? "" : String(value);
+  let s = value === null || value === undefined ? "" : String(value);
+  // Neutralize spreadsheet formula injection: cells starting with = + - @ tab or CR.
+  if (/^[=+\-@\t\r]/.test(s)) s = `'${s}`;
   if (/[",\n]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
   return s;
 }

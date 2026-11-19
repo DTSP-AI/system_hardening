@@ -4,6 +4,7 @@ import { leadRouter } from "@/server/api/routers/lead";
 import { prospectingRouter } from "@/server/api/routers/prospecting";
 import { contactRouter } from "@/server/api/routers/contact";
 import { companyRouter } from "@/server/api/routers/company";
+import { accountRouter } from "@/server/api/routers/account";
 import { dealRouter } from "@/server/api/routers/deal";
 import { pipelineStageRouter } from "@/server/api/routers/pipelineStage";
 import { activityRouter } from "@/server/api/routers/activity";
@@ -26,6 +27,7 @@ export const appRouter = createTRPCRouter({
   contact: contactRouter,
   company: companyRouter,
   deal: dealRouter,
+  account: accountRouter,
   pipelineStage: pipelineStageRouter,
   activity: activityRouter,
   email: emailRouter,

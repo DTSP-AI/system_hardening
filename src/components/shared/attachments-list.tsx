@@ -10,7 +10,7 @@ import { MAX_UPLOAD_BYTES } from "@/lib/abuse-limits";
 import { useCurrentRole } from "@/lib/hooks/use-current-role";
 
 const ACCEPT = ".pdf,.png,.jpg,.jpeg,.docx,.xlsx,.csv,.txt";
-const ENTITY_TYPES = ["CONTACT", "COMPANY", "DEAL", "LEAD"] as const;
+const ENTITY_TYPES = ["CONTACT", "COMPANY", "DEAL", "LEAD", "ACCOUNT"] as const;
 export type AttachmentEntityType = (typeof ENTITY_TYPES)[number];
 
 function formatBytes(bytes: number): string {

@@ -1,11 +1,19 @@
+import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { zId, zLong } from "@/lib/validation";
 import { createTRPCRouter, authedProcedure } from "@/server/api/trpc";
+
+/** Authors may change their own activities; OWNER/ADMIN may change any. */
+function ownedBy(ctx: { userId: string; user: { role: string } }) {
+  return ctx.user.role === "OWNER" || ctx.user.role === "ADMIN" ? {} : { authorId: ctx.userId };
+}
 
 const activityInput = z.object({
   type: z.enum(["NOTE", "TASK", "CALL", "EMAIL", "MEETING"]),
   contactId: zId.optional(),
   dealId: zId.optional(),
+  accountId: zId.optional(),
+  leadId: zId.optional(),
   body: zLong.optional(),
   dueDate: z.coerce.date().optional(),
 });
@@ -76,14 +84,20 @@ export const activityRouter = createTRPCRouter({
 
   complete: authedProcedure
     .input(z.object({ id: zId }))
-    .mutation(({ ctx, input }) =>
-      ctx.db.activity.update({
-        where: { id: input.id },
+    .mutation(async ({ ctx, input }) => {
+      const r = await ctx.db.activity.updateMany({
+        where: { id: input.id, ...ownedBy(ctx) },
         data: { completedAt: new Date() },
-      }),
-    ),
+      });
+      if (r.count !== 1) throw new TRPCError({ code: "NOT_FOUND", message: "Not found" });
+      return { id: input.id };
+    }),
 
   delete: authedProcedure
     .input(z.object({ id: zId }))
-    .mutation(({ ctx, input }) => ctx.db.activity.delete({ where: { id: input.id } })),
+    .mutation(async ({ ctx, input }) => {
+      const r = await ctx.db.activity.deleteMany({ where: { id: input.id, ...ownedBy(ctx) } });
+      if (r.count !== 1) throw new TRPCError({ code: "NOT_FOUND", message: "Not found" });
+      return { id: input.id };
+    }),
 });

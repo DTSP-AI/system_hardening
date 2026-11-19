@@ -1,6 +1,12 @@
 import { z } from "zod";
 import { zId } from "@/lib/validation";
+import { TRPCError } from "@trpc/server";
 import { createTRPCRouter, authedProcedure } from "@/server/api/trpc";
+
+/** Throws NOT_FOUND unless exactly one row was changed (covers missing and other-user rows alike). */
+function assertOwned(count: number) {
+  if (count !== 1) throw new TRPCError({ code: "NOT_FOUND", message: "Not found" });
+}
 
 const quadrantSchema = z.enum(["URGENT_IMPORTANT", "SCHEDULE", "DELEGATE", "BACK_BURNER"]);
 
@@ -22,17 +28,31 @@ export const todoRouter = createTRPCRouter({
 
   toggle: authedProcedure
     .input(z.object({ id: zId, completed: z.boolean() }))
-    .mutation(({ ctx, input }) =>
-      ctx.db.todo.update({ where: { id: input.id }, data: { completed: input.completed } }),
-    ),
+    .mutation(async ({ ctx, input }) => {
+      const r = await ctx.db.todo.updateMany({
+        where: { id: input.id, authorId: ctx.userId },
+        data: { completed: input.completed },
+      });
+      assertOwned(r.count);
+      return { id: input.id };
+    }),
 
   move: authedProcedure
     .input(z.object({ id: zId, quadrant: quadrantSchema }))
-    .mutation(({ ctx, input }) =>
-      ctx.db.todo.update({ where: { id: input.id }, data: { quadrant: input.quadrant } }),
-    ),
+    .mutation(async ({ ctx, input }) => {
+      const r = await ctx.db.todo.updateMany({
+        where: { id: input.id, authorId: ctx.userId },
+        data: { quadrant: input.quadrant },
+      });
+      assertOwned(r.count);
+      return { id: input.id };
+    }),
 
   delete: authedProcedure
     .input(z.object({ id: zId }))
-    .mutation(({ ctx, input }) => ctx.db.todo.delete({ where: { id: input.id } })),
+    .mutation(async ({ ctx, input }) => {
+      const r = await ctx.db.todo.deleteMany({ where: { id: input.id, authorId: ctx.userId } });
+      assertOwned(r.count);
+      return { id: input.id };
+    }),
 });

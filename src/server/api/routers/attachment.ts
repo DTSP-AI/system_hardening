@@ -2,6 +2,7 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { del, head, BlobNotFoundError } from "@vercel/blob";
 import { Prisma } from "@generated/prisma/client";
+import { logAudit, toJsonSafe } from "@/lib/audit";
 import { zId } from "@/lib/validation";
 import { MAX_UPLOAD_BYTES } from "@/lib/abuse-limits";
 import { entityExists } from "@/lib/attachments/entity";
@@ -14,7 +15,7 @@ import {
 } from "@/lib/attachments/file-policy";
 import { createTRPCRouter, authedProcedure } from "@/server/api/trpc";
 
-const ENTITY_TYPES = ["CONTACT", "COMPANY", "DEAL", "LEAD"] as const;
+const ENTITY_TYPES = ["CONTACT", "COMPANY", "DEAL", "LEAD", "ACCOUNT"] as const;
 
 export const attachmentRouter = createTRPCRouter({
   forEntity: authedProcedure
@@ -69,7 +70,7 @@ export const attachmentRouter = createTRPCRouter({
       }
 
       try {
-        return await ctx.db.attachment.create({
+        const created = await ctx.db.attachment.create({
           data: {
             entityType: input.entityType,
             entityId: input.entityId,
@@ -80,6 +81,14 @@ export const attachmentRouter = createTRPCRouter({
             uploadedById: ctx.userId,
           },
         });
+        await logAudit(ctx.db, {
+          actorId: ctx.userId,
+          entityType: "ATTACHMENT",
+          entityId: created.id,
+          action: "CREATE",
+          diff: toJsonSafe(created),
+        });
+        return created;
       } catch (err) {
         if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
           throw new TRPCError({ code: "CONFLICT", message: "File already attached" });
@@ -103,6 +112,13 @@ export const attachmentRouter = createTRPCRouter({
         });
       }
       const deleted = await ctx.db.attachment.delete({ where: { id: input.id } });
+      await logAudit(ctx.db, {
+        actorId: ctx.userId,
+        entityType: "ATTACHMENT",
+        entityId: input.id,
+        action: "DELETE",
+        diff: toJsonSafe(deleted),
+      });
       // DB row first: worst case is an inaccessible orphan blob, never a dangling row.
       try {
         await del(attachment.blobPathname);

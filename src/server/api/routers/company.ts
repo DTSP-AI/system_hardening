@@ -35,15 +35,31 @@ export const companyRouter = createTRPCRouter({
 
   create: authedProcedure
     .input(companyInput)
-    .mutation(({ ctx, input }) =>
-      ctx.db.company.create({ data: { ...input } }),
-    ),
+    .mutation(async ({ ctx, input }) => {
+      const created = await ctx.db.company.create({ data: { ...input } });
+      await logAudit(ctx.db, {
+        actorId: ctx.userId,
+        entityType: "COMPANY",
+        entityId: created.id,
+        action: "CREATE",
+        diff: toJsonSafe(created),
+      });
+      return created;
+    }),
 
   update: authedProcedure
     .input(companyInput.partial().extend({ id: zId }))
-    .mutation(({ ctx, input }) => {
+    .mutation(async ({ ctx, input }) => {
       const { id, ...data } = input;
-      return ctx.db.company.update({ where: { id }, data });
+      const updated = await ctx.db.company.update({ where: { id }, data });
+      await logAudit(ctx.db, {
+        actorId: ctx.userId,
+        entityType: "COMPANY",
+        entityId: id,
+        action: "UPDATE",
+        diff: toJsonSafe(data),
+      });
+      return updated;
     }),
 
   delete: adminProcedure

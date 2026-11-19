@@ -1,3 +1,4 @@
+import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { zId, zName, zShort, zLong, zIdArray, zCustomFields } from "@/lib/validation";
 import { createTRPCRouter, authedProcedure, adminProcedure } from "@/server/api/trpc";
@@ -36,27 +37,54 @@ export const dealRouter = createTRPCRouter({
         stage: true,
         contact: true,
         company: true,
-        activities: { orderBy: { createdAt: "desc" } },
+        account: { select: { id: true } },
+        activities: {
+          where: { OR: [{ dealId: input.id }, { lead: { convertedDealId: input.id } }] },
+          orderBy: { createdAt: "desc" },
+        },
       },
     }),
   ),
 
   create: authedProcedure
     .input(dealInput)
-    .mutation(({ ctx, input }) =>
-      ctx.db.deal.create({ data: { ...input } }),
-    ),
+    .mutation(async ({ ctx, input }) => {
+      const created = await ctx.db.deal.create({ data: { ...input } });
+      await logAudit(ctx.db, {
+        actorId: ctx.userId,
+        entityType: "DEAL",
+        entityId: created.id,
+        action: "CREATE",
+        diff: toJsonSafe(created),
+      });
+      return created;
+    }),
 
   update: authedProcedure
     .input(dealInput.partial().extend({ id: zId }))
-    .mutation(({ ctx, input }) => {
+    .mutation(async ({ ctx, input }) => {
       const { id, ...data } = input;
-      return ctx.db.deal.update({ where: { id }, data });
+      const updated = await ctx.db.deal.update({ where: { id }, data });
+      await logAudit(ctx.db, {
+        actorId: ctx.userId,
+        entityType: "DEAL",
+        entityId: id,
+        action: "UPDATE",
+        diff: toJsonSafe(data),
+      });
+      return updated;
     }),
 
   moveStage: authedProcedure
     .input(z.object({ id: zId, stageId: zId }))
     .mutation(async ({ ctx, input }) => {
+      const converted = await ctx.db.account.findUnique({
+        where: { sourceDealId: input.id },
+        select: { id: true },
+      });
+      if (converted) {
+        throw new TRPCError({ code: "CONFLICT", message: "This deal was converted to an account and can no longer change stage" });
+      }
       const stage = await ctx.db.pipelineStage.findUniqueOrThrow({
         where: { id: input.stageId },
       });
@@ -69,6 +97,14 @@ export const dealRouter = createTRPCRouter({
         },
       });
 
+      await logAudit(ctx.db, {
+        actorId: ctx.userId,
+        entityType: "DEAL",
+        entityId: deal.id,
+        action: "UPDATE",
+        diff: { stageId: input.stageId, status: deal.status },
+      });
+
       if (deal.ownerId && deal.ownerId !== ctx.userId) {
         await notify(ctx.db, {
           userId: deal.ownerId,
@@ -79,6 +115,37 @@ export const dealRouter = createTRPCRouter({
       }
 
       return deal;
+    }),
+
+  convertToAccount: authedProcedure
+    .input(z.object({ id: zId }))
+    .mutation(async ({ ctx, input }) => {
+      const deal = await ctx.db.deal.findUniqueOrThrow({
+        where: { id: input.id },
+        include: { company: true, account: true },
+      });
+      if (deal.account) return deal.account;
+      if (deal.status !== "WON") {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "Only won deals can be converted to an account" });
+      }
+      const account = await ctx.db.account.create({
+        data: {
+          name: deal.company?.name ?? deal.name,
+          contractValue: deal.amount,
+          sourceDealId: deal.id,
+          companyId: deal.companyId,
+          contactId: deal.contactId,
+          ownerId: deal.ownerId,
+        },
+      });
+      await logAudit(ctx.db, {
+        actorId: ctx.userId,
+        entityType: "ACCOUNT",
+        entityId: account.id,
+        action: "CREATE",
+        diff: toJsonSafe(account),
+      });
+      return account;
     }),
 
   delete: adminProcedure

@@ -26,7 +26,7 @@ type Lead = RouterOutputs["lead"]["list"][number];
 type LeadStatus = Lead["status"];
 
 // CONVERTED is shown but is not a drop target and its cards are not draggable:
-// conversion creates a Contact via lead.convert (the "Convert to Contact" button on
+// conversion creates a Contact, Company and Deal via lead.convert (the Convert button on
 // the lead page), which setStatus does not do.
 const COLUMNS: { status: LeadStatus; label: string; color: string }[] = [
   { status: "NEW", label: "New", color: "var(--viz-blue)" },

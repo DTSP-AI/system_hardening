@@ -2,6 +2,7 @@
 
 import { use } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { PhoneCall } from "lucide-react";
 import { trpc } from "@/lib/trpc/client";
 import { Card } from "@/components/ui/card";
@@ -47,6 +48,7 @@ function Field({ label, value }: { label: string; value: React.ReactNode }) {
 
 export default function DealDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
+  const router = useRouter();
   const utils = trpc.useUtils();
   const deal = trpc.deal.byId.useQuery({ id });
   const requestCall = useCallStore((s) => s.requestCall);
@@ -56,6 +58,15 @@ export default function DealDetailPage({ params }: { params: Promise<{ id: strin
     onSuccess: () => {
       utils.deal.byId.invalidate({ id });
       toast.success("Stage updated");
+    },
+    onError: (err) => toast.error(err.message),
+  });
+
+  const convertToAccount = trpc.deal.convertToAccount.useMutation({
+    onSuccess: (account) => {
+      utils.deal.byId.invalidate({ id });
+      toast.success("Deal converted to account");
+      router.push(`/accounts/${account.id}`);
     },
     onError: (err) => toast.error(err.message),
   });
@@ -114,7 +125,7 @@ export default function DealDetailPage({ params }: { params: Promise<{ id: strin
               <Select
                 value={deal.data.stageId}
                 onValueChange={(stageId) => moveStage.mutate({ id, stageId })}
-                disabled={moveStage.isPending}
+                disabled={moveStage.isPending || !!deal.data.account}
               >
                 <SelectTrigger className="w-full">
                   <SelectValue />
@@ -185,6 +196,19 @@ export default function DealDetailPage({ params }: { params: Promise<{ id: strin
             />
             <CustomFieldsDisplay entityType="DEAL" values={deal.data.customFields} />
             <TagPicker entityType="DEAL" entityId={id} />
+            {deal.data.account ? (
+              <Button asChild variant="outline" className="mt-3 w-full">
+                <Link href={`/accounts/${deal.data.account.id}`}>View account</Link>
+              </Button>
+            ) : deal.data.status === "WON" ? (
+              <Button
+                className="mt-3 w-full"
+                onClick={() => convertToAccount.mutate({ id })}
+                disabled={convertToAccount.isPending}
+              >
+                Convert to account
+              </Button>
+            ) : null}
           </div>
         </>
       }

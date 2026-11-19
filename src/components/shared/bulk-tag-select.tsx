@@ -11,7 +11,7 @@ import {
 import { trpc } from "@/lib/trpc/client";
 import { toast } from "sonner";
 
-type TaggableEntityType = "CONTACT" | "COMPANY" | "DEAL" | "LEAD";
+type TaggableEntityType = "CONTACT" | "COMPANY" | "DEAL" | "LEAD" | "ACCOUNT";
 
 export function BulkTagSelect({
   entityType,

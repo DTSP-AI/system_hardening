@@ -24,7 +24,7 @@ const TAG_COLORS = [
   "var(--viz-orange)",
 ];
 
-type EntityType = "CONTACT" | "COMPANY" | "DEAL" | "LEAD";
+type EntityType = "CONTACT" | "COMPANY" | "DEAL" | "LEAD" | "ACCOUNT";
 
 export function TagPicker({ entityType, entityId }: { entityType: EntityType; entityId: string }) {
   const utils = trpc.useUtils();

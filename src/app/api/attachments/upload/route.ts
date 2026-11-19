@@ -17,7 +17,7 @@ import { validateUpload } from "@/lib/attachments/file-policy";
 import { entityExists } from "@/lib/attachments/entity";
 
 const fieldsSchema = z.object({
-  entityType: z.enum(["CONTACT", "COMPANY", "DEAL", "LEAD"]),
+  entityType: z.enum(["CONTACT", "COMPANY", "DEAL", "LEAD", "ACCOUNT"]),
   entityId: z.string().min(1).max(64),
 });
 

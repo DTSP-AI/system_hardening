@@ -18,7 +18,10 @@ export const notificationRouter = createTRPCRouter({
   markRead: authedProcedure
     .input(z.object({ id: zId }))
     .mutation(({ ctx, input }) =>
-      ctx.db.notification.update({ where: { id: input.id }, data: { readAt: new Date() } }),
+      ctx.db.notification.updateMany({
+        where: { id: input.id, userId: ctx.userId },
+        data: { readAt: new Date() },
+      }),
     ),
 
   markAllRead: authedProcedure.mutation(({ ctx }) =>

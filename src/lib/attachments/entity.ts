@@ -1,7 +1,7 @@
 import type { PrismaClient } from "@generated/prisma/client";
 import type { DbTx } from "@/lib/db";
 
-export type AttachmentEntityType = "CONTACT" | "COMPANY" | "DEAL" | "LEAD";
+export type AttachmentEntityType = "CONTACT" | "COMPANY" | "DEAL" | "LEAD" | "ACCOUNT";
 
 /** True if the polymorphic parent row exists. Throws on DB error (callers map it). */
 export async function entityExists(
@@ -19,5 +19,7 @@ export async function entityExists(
       return (await db.deal.findUnique(args)) !== null;
     case "LEAD":
       return (await db.lead.findUnique(args)) !== null;
+    case "ACCOUNT":
+      return (await db.account.findUnique(args)) !== null;
   }
 }

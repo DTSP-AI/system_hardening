@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import {
   Users,
   LayoutDashboard,
-  Building2,
+  Landmark,
   DollarSign,
   ShieldCheck,
   BarChart3,
@@ -20,8 +20,8 @@ const CORE_NAV_ITEMS = [
   { href: "/production", label: "Production", icon: BarChart3, chip: "var(--viz-violet)" },
   { href: "/prospecting", label: "Prospecting", icon: Radar, chip: "var(--viz-violet)" },
   { href: "/leads", label: "Leads", icon: UserPlus, chip: "var(--viz-orange)" },
-  { href: "/companies", label: "Companies", icon: Building2, chip: "var(--viz-yellow)" },
   { href: "/deals", label: "Deals", icon: DollarSign, chip: "var(--viz-blue)" },
+  { href: "/accounts", label: "Accounts", icon: Landmark, chip: "var(--viz-yellow)" },
   { href: "/contacts", label: "Contacts", icon: Users, chip: "var(--viz-aqua)" },
 ];
 

@@ -2,7 +2,7 @@ import { z } from "zod";
 import { zId, zName, zIdArray } from "@/lib/validation";
 import { createTRPCRouter, authedProcedure, adminProcedure } from "@/server/api/trpc";
 
-const ENTITY_TYPES = ["CONTACT", "COMPANY", "DEAL", "LEAD"] as const;
+const ENTITY_TYPES = ["CONTACT", "COMPANY", "DEAL", "LEAD", "ACCOUNT"] as const;
 
 export const tagRouter = createTRPCRouter({
   list: authedProcedure.query(({ ctx }) =>

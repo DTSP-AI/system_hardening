@@ -83,6 +83,29 @@ export async function POST(req: Request) {
       return twiml(sayAndHangup("This caller is not authorized."));
     }
 
+    // Replay/retry guard: a repeated webhook for the same parent CallSid reuses the
+    // existing Activity instead of creating a second call record or burning quota.
+    if (params.CallSid) {
+      const prior = await prisma.activity.findFirst({
+        where: {
+          type: "CALL",
+          authorId: identity.userId,
+          metadata: { path: ["parentCallSid"], equals: params.CallSid },
+        },
+        select: { id: true },
+      });
+      if (prior) {
+        return twiml(
+          buildOutboundDialTwiml({
+            origin: getRequestOrigin(req),
+            activityId: prior.id,
+            to: dial.e164,
+            callerId,
+          }),
+        );
+      }
+    }
+
     const contactId = await resolveOptionalId(params.contactId, "contactId");
     const dealId = await resolveOptionalId(params.dealId, "dealId");
 
