@@ -206,6 +206,11 @@ function ActivityList({
           activity.dueDate &&
           new Date(activity.dueDate) < new Date();
         const call = getCallMetadata(activity);
+        // EMAIL activities carry metadata.status: sending, sent or failed. Older rows have none and were sent.
+        const emailStatus =
+          activity.type === "EMAIL" && activity.metadata && typeof activity.metadata === "object"
+            ? (activity.metadata as { status?: string }).status
+            : undefined;
         return (
           <div key={activity.id} className="flex gap-3 rounded-md border border-border bg-card p-3">
             <ActivityIcon activity={activity} call={call} />
@@ -221,6 +226,8 @@ function ActivityList({
                   )}
                   {overdue && <Badge variant="destructive">Overdue</Badge>}
                   {call?.status && <Badge variant="outline">{call.status}</Badge>}
+                  {emailStatus === "failed" && <Badge variant="destructive">Not sent</Badge>}
+                  {emailStatus === "sending" && <Badge variant="outline">Sending</Badge>}
                 </div>
                 <span className="mono-num shrink-0 text-xs text-muted-foreground">
                   {new Date(activity.createdAt).toLocaleString()}

@@ -22,19 +22,28 @@ export function getEmailConfig(): { apiKey: string; from: string } | null {
   return { apiKey, from };
 }
 
-export async function sendEmail(input: { to: string; subject: string; text: string }) {
+export async function sendEmail(input: {
+  to: string;
+  subject: string;
+  text: string;
+  /** Sent as the Idempotency-Key header so a repeated request cannot deliver twice. */
+  idempotencyKey?: string;
+}) {
   const config = getEmailConfig();
   if (!config) throw new EmailNotConfiguredError();
 
   const resend = new Resend(config.apiKey);
   let result;
   try {
-    result = await resend.emails.send({
-      from: config.from,
-      to: input.to,
-      subject: input.subject,
-      text: input.text,
-    });
+    result = await resend.emails.send(
+      {
+        from: config.from,
+        to: input.to,
+        subject: input.subject,
+        text: input.text,
+      },
+      input.idempotencyKey ? { idempotencyKey: input.idempotencyKey } : undefined,
+    );
   } catch (err) {
     throw new EmailProviderError(err);
   }
