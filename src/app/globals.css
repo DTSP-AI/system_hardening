@@ -865,3 +865,7 @@
   .crm-topbar-overview .crm-search { flex: none; width: 36px; padding: 0; justify-content: center; }
   .crm-topbar-overview .crm-search span, .crm-topbar-overview .crm-search kbd { display: none; }
 }
+
+.crm-header-greeting span { font-size: clamp(20px, 2vw, 27px); }
+@media (min-width: 901px) { .crm-topbar-overview .crm-search { transform: translateX(-24px); } }
+@media (max-width: 600px) { .crm-header-greeting span { font-size: 18px; } }
