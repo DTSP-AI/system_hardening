@@ -3,10 +3,10 @@
 # Hand-written intent lives in CLAUDE.md frontmatter; this file records what is on disk.
 schema: contract-graph/1
 project: bos1
-inputs_hash: e482c9307235d5dbafd21e98aef44560199590c528d4ce55a09bfc5bfec502f6
+inputs_hash: a40f90cc7ac4a4b69c352df4819f3c8f0244341e143bc57c815a3f95797db698
 counts:
   contracts: 7
-  source_files: 178
+  source_files: 182
   modules: 4
   problems: 0
   advisories: 0
@@ -123,7 +123,7 @@ modules:
 - path: src
   languages:
   - typescript
-  files: 152
+  files: 155
   imports: []
   external:
   - '@/components'
@@ -162,7 +162,7 @@ modules:
 - path: tests
   languages:
   - typescript
-  files: 18
+  files: 19
   imports:
   - src
   external:
@@ -293,6 +293,7 @@ files:
 - path: src/lib/fonts.ts
 - path: src/lib/hooks/use-current-role.ts
 - path: src/lib/hooks/use-row-selection.ts
+- path: src/lib/json.ts
 - path: src/lib/notify.ts
 - path: src/lib/rate-limit.ts
 - path: src/lib/roles.ts
@@ -332,8 +333,10 @@ files:
 - path: src/server/mcp/envelope.ts
 - path: src/server/services/attachments.ts
 - path: src/server/services/crm-read.ts
+- path: src/server/services/crm-write.ts
 - path: src/server/services/deal-stage.ts
 - path: src/server/services/email-send.ts
+- path: src/server/services/idempotency.ts
 - path: src/server/services/lead-convert.ts
 - path: tests/csv.test.ts
   imports:
@@ -372,6 +375,11 @@ files:
   - tests/helpers/db.ts
 - path: tests/server/mcp-read.test.ts
   imports:
+  - tests/helpers/db.ts
+  - tests/helpers/mcp.ts
+- path: tests/server/mcp-write.test.ts
+  imports:
+  - tests/helpers/caller.ts
   - tests/helpers/db.ts
   - tests/helpers/mcp.ts
 - path: tests/server/transactions.test.ts

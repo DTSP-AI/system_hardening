@@ -1,6 +1,6 @@
 import { TRPCError } from "@trpc/server";
 import type { AuthInfo } from "@modelcontextprotocol/server";
-import { Prisma } from "@generated/prisma/client";
+import { toMachineJsonText } from "@/lib/json";
 import { hasScope, type ApiKeyPrincipal } from "@/lib/auth/api-key";
 import type { ApiKeyScope } from "@/lib/auth/api-key-scopes";
 
@@ -17,20 +17,8 @@ export type ErrorCode = "forbidden" | "not_found" | "validation_error" | "confli
 
 export type ToolExtra = { http?: { authInfo?: AuthInfo } };
 
-/** JSON text for a tool result. Money columns (Prisma Decimal, 12,2) go out as numbers, not strings. */
-function serialize(value: unknown): string {
-  return JSON.stringify(
-    value,
-    function (this: Record<string, unknown>, key: string, json: unknown) {
-      const raw = this[key];
-      return raw instanceof Prisma.Decimal ? raw.toNumber() : json;
-    },
-    2,
-  );
-}
-
 export function ok(data: unknown) {
-  return { content: [{ type: "text" as const, text: serialize({ success: true, data }) }] };
+  return { content: [{ type: "text" as const, text: toMachineJsonText({ success: true, data }, 2) }] };
 }
 
 export function fail(code: ErrorCode, message: string, suggestion: string) {

@@ -26,6 +26,10 @@ tools:
   - { name: bos1_get_account, scope: bos1:read, readOnly: true, destructive: false, idempotent: true, openWorld: false, errors: [forbidden, not_found] }
   - { name: bos1_list_pipeline_stages, scope: bos1:read, readOnly: true, destructive: false, idempotent: true, openWorld: false, errors: [forbidden] }
   - { name: bos1_list_activities, scope: bos1:read, readOnly: true, destructive: false, idempotent: true, openWorld: false, errors: [forbidden, validation_error] }
+  - { name: bos1_create_lead, scope: bos1:write, readOnly: false, destructive: false, idempotent: true, openWorld: false, errors: [forbidden, validation_error] }
+  - { name: bos1_log_activity, scope: bos1:write, readOnly: false, destructive: false, idempotent: true, openWorld: false, errors: [forbidden, not_found, validation_error] }
+  - { name: bos1_move_deal_stage, scope: bos1:write, readOnly: false, destructive: false, idempotent: true, openWorld: false, errors: [forbidden, not_found, conflict] }
+  - { name: bos1_convert_lead, scope: bos1:write, readOnly: false, destructive: true, idempotent: true, openWorld: false, errors: [forbidden, not_found, conflict, validation_error] }
 clients: [claude-code]
 cli: none
 relationships:
@@ -195,6 +199,82 @@ List the activity timeline of one record, newest first: notes, tasks, calls, ema
 | entityId | string | Yes | Id of that record |
 | limit | int | No | 1-100. Default 25 |
 | cursor | string | No | `nextCursor` from the previous page |
+
+## Writes and idempotency
+
+Every write tool needs the Write permission and an `idempotencyKey`: a string of 8 to 128
+characters that you choose, unique to the change you intend. If a call is repeated with the
+same key (a retry, a timeout, a duplicate request), the server returns the first result and
+changes nothing. Keys are scoped to the API key and the tool. A write that fails stores
+nothing, so it can be retried with the same key. Every write is recorded in the audit log
+under `apikey:<key id>`.
+
+### bos1_create_lead
+
+Create a lead with status NEW. Scope `bos1:write`.
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| idempotencyKey | string | Yes | 8-128 characters, unique to this write |
+| firstName | string | Yes | 1-200 characters |
+| lastName | string | Yes | 1-200 characters |
+| email | string | No | Valid email address |
+| phone | string | No | Up to 32 characters |
+| companyName | string | No | Becomes the company when the lead is converted |
+| jobTitle | string | No | |
+| source | string | No | Where the lead came from |
+
+**Returns:** `{ "success": true, "data": { "id": "...", "status": "NEW", ... } }`
+
+**Errors:** forbidden, validation_error
+
+### bos1_log_activity
+
+Log a note or a task on a contact, deal, lead or account. Calls, emails and meetings are
+created by their own flows and cannot be logged here. Scope `bos1:write`.
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| idempotencyKey | string | Yes | 8-128 characters, unique to this write |
+| type | string | Yes | NOTE or TASK |
+| entityType | string | Yes | CONTACT, DEAL, LEAD or ACCOUNT |
+| entityId | string | Yes | Id of that record |
+| body | string | Yes | 1-10,000 characters |
+| dueDate | string | No | ISO 8601 date-time, for tasks |
+
+**Errors:** forbidden, not_found, validation_error
+
+### bos1_move_deal_stage
+
+Move a deal to another pipeline stage. The deal's status and close date follow the stage:
+a Won stage gives WON, a Lost stage gives LOST, any other stage reopens it. A deal that was
+converted to an account cannot change stage. Scope `bos1:write`.
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| idempotencyKey | string | Yes | 8-128 characters, unique to this write |
+| dealId | string | Yes | Deal id |
+| stageId | string | Yes | From `bos1_list_pipeline_stages` |
+
+**Returns:** `{ "success": true, "data": { "id": "...", "stageId": "...", "status": "WON", "closedAt": "..." } }`
+
+**Errors:** forbidden, not_found, conflict (the deal was converted to an account)
+
+### bos1_convert_lead
+
+Convert a lead into a contact (and a company, when the lead has a company name) and an open
+deal in the first pipeline stage. This is final: a converted lead cannot be converted again
+or change status. Calling it on a lead that is already converted returns the contact and
+deal made the first time. Scope `bos1:write`.
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| idempotencyKey | string | Yes | 8-128 characters, unique to this write |
+| leadId | string | Yes | Lead id |
+
+**Returns:** `{ "success": true, "data": { "contact": { "id": "..." }, "deal": { "id": "..." } } }`
+
+**Errors:** forbidden, not_found, conflict, validation_error (no open pipeline stage exists)
 
 ## Not available through this surface
 

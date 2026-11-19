@@ -34,6 +34,11 @@ import {
   listPipelineStages,
   searchRecords,
 } from "@/server/services/crm-read";
+import { createLead, logActivity } from "@/server/services/crm-write";
+import { changeDealStage } from "@/server/services/deal-stage";
+import { runIdempotent } from "@/server/services/idempotency";
+import { convertLead } from "@/server/services/lead-convert";
+import { TRPCError } from "@trpc/server";
 
 export const maxDuration = 60;
 
@@ -42,6 +47,12 @@ const page = {
   limit: z.number().int().min(1).max(MAX_PAGE_SIZE).optional().describe("Rows per page, 1-100. Default 25."),
   cursor: zId.optional().describe("nextCursor from the previous page."),
 };
+
+const idempotencyKey = z
+  .string()
+  .min(8)
+  .max(128)
+  .describe("A unique string you choose for this write. Repeating a call with the same key returns the first result and changes nothing.");
 
 const handler = createMcpHandler(
   (server) => {
@@ -236,6 +247,112 @@ const handler = createMcpHandler(
         const gate = requireScope(extra, "read");
         if (gate.denied) return gate.denied;
         return guarded(async () => ok(await listActivities(prisma, args)));
+      },
+    );
+
+    // ── Write tools (scope bos1:write, idempotency key required) ─────
+    server.registerTool(
+      "bos1_create_lead",
+      {
+        description: "Create a new lead. Requires the write permission.",
+        inputSchema: z.object({
+          idempotencyKey,
+          firstName: z.string().min(1).max(200),
+          lastName: z.string().min(1).max(200),
+          email: z.email().max(254).optional(),
+          phone: z.string().max(32).optional(),
+          companyName: z.string().max(200).optional(),
+          jobTitle: z.string().max(200).optional(),
+          source: z.string().max(200).optional(),
+        }),
+        annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+      },
+      async ({ idempotencyKey: key, ...input }, extra) => {
+        const gate = requireScope(extra, "write");
+        if (gate.denied) return gate.denied;
+        const actorId = gate.principal.actorId;
+        return guarded(async () =>
+          ok(
+            await runIdempotent(prisma, { principal: actorId, tool: "bos1_create_lead", key }, (tx) =>
+              createLead(tx, actorId, input),
+            ),
+          ),
+        );
+      },
+    );
+
+    server.registerTool(
+      "bos1_log_activity",
+      {
+        description:
+          "Log a note or a task on a contact, deal, lead or account. Calls, emails and meetings cannot be logged here. Requires the write permission.",
+        inputSchema: z.object({
+          idempotencyKey,
+          type: z.enum(["NOTE", "TASK"]),
+          entityType: z.enum(ACTIVITY_PARENT_TYPES),
+          entityId: zId,
+          body: z.string().min(1).max(10_000),
+          dueDate: z.iso.datetime().optional().describe("ISO 8601 date-time. Tasks only."),
+        }),
+        annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+      },
+      async ({ idempotencyKey: key, dueDate, ...input }, extra) => {
+        const gate = requireScope(extra, "write");
+        if (gate.denied) return gate.denied;
+        const actorId = gate.principal.actorId;
+        return guarded(async () =>
+          ok(
+            await runIdempotent(prisma, { principal: actorId, tool: "bos1_log_activity", key }, (tx) =>
+              logActivity(tx, actorId, { ...input, dueDate: dueDate ? new Date(dueDate) : undefined }),
+            ),
+          ),
+        );
+      },
+    );
+
+    server.registerTool(
+      "bos1_move_deal_stage",
+      {
+        description:
+          "Move a deal to another pipeline stage. Status and close date follow the stage (Won, Lost or open). A deal already converted to an account cannot move. Requires the write permission.",
+        inputSchema: z.object({ idempotencyKey, dealId: zId, stageId: zId }),
+        annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+      },
+      async ({ idempotencyKey: key, dealId, stageId }, extra) => {
+        const gate = requireScope(extra, "write");
+        if (gate.denied) return gate.denied;
+        const actorId = gate.principal.actorId;
+        return guarded(async () =>
+          ok(
+            await runIdempotent(prisma, { principal: actorId, tool: "bos1_move_deal_stage", key }, async (tx) => {
+              const [deal] = await changeDealStage(tx, { actorId, dealIds: [dealId], stageId });
+              if (!deal) throw new TRPCError({ code: "NOT_FOUND", message: "Deal not found" });
+              return deal;
+            }),
+          ),
+        );
+      },
+    );
+
+    server.registerTool(
+      "bos1_convert_lead",
+      {
+        description:
+          "Convert a lead into a contact (and company) and an open deal. This is final: a converted lead cannot be converted again or change status. Calling it on a converted lead returns the existing contact and deal. Requires the write permission.",
+        inputSchema: z.object({ idempotencyKey, leadId: zId }),
+        annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false },
+      },
+      async ({ idempotencyKey: key, leadId }, extra) => {
+        const gate = requireScope(extra, "write");
+        if (gate.denied) return gate.denied;
+        const actorId = gate.principal.actorId;
+        return guarded(async () =>
+          ok(
+            await runIdempotent(prisma, { principal: actorId, tool: "bos1_convert_lead", key }, (tx) =>
+              convertLead(tx, { actorId, leadId }),
+            ),
+          ),
+        );
       },
     );
   },
