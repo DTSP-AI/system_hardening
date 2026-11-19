@@ -838,3 +838,15 @@
 .overview-section-label h2 { font-size: 15px; font-weight: 650; }
 @media (max-width: 900px) { .overview-grid { grid-template-columns: 1fr; } .overview-tools { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 600px) { .overview-tools { grid-template-columns: 1fr; } }
+
+/* Keep phone and notifications together at the right edge on wider screens. */
+@media (min-width: 901px) {
+  .overview-tools > :first-child { grid-column: 1 / 3; grid-row: 1 / 3; }
+  .overview-tools > :nth-child(2) { grid-column: 3; grid-row: 1; }
+  .overview-tools > :nth-child(3) { grid-column: 3; grid-row: 2; }
+}
+@media (min-width: 601px) and (max-width: 900px) {
+  .overview-tools > :first-child { grid-column: 1; grid-row: 1 / 3; }
+  .overview-tools > :nth-child(2) { grid-column: 2; grid-row: 1; }
+  .overview-tools > :nth-child(3) { grid-column: 2; grid-row: 2; }
+}
