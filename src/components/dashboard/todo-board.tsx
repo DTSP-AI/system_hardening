@@ -172,7 +172,7 @@ export function TodoBoard() {
     <Card size="sm">
       <CardHeader>
         <CardTitle className="text-xs! font-semibold tracking-wide text-muted-foreground uppercase">
-          Current Priorities
+          Eisenhower Priority Matrix
         </CardTitle>
       </CardHeader>
       <CardContent className="grid grid-cols-1 items-start gap-3 md:grid-cols-2">

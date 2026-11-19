@@ -1017,3 +1017,9 @@
 .overview-priority-board [data-slot="card-content"] { gap: 8px; }
 .overview-priority-board [data-slot="card-content"] > div { padding: 8px; }
 @media (max-width: 900px) { .overview-priority-layout { grid-template-columns: 1fr; } }
+
+.overview-priority-board { display: grid; gap: 14px; align-content: start; }
+@media (min-width: 901px) { .overview-priority-layout { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); } }
+
+.overview-feed-label { margin-bottom: 10px; font-size: 12px; font-weight: 700; color: var(--card-foreground); }
+.overview-feed-divider { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border); }
