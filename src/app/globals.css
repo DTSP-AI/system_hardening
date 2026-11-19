@@ -994,3 +994,8 @@
   .crm-topbar-greeting .crm-search { flex: none; width: 36px; padding: 0; justify-content: center; }
   .crm-topbar-greeting .crm-search span, .crm-topbar-greeting .crm-search kbd { display: none; }
 }
+
+/* Match the header clock to the YBRYX cyan accent. */
+.crm-topbar .crm-top-actions .font-brand,
+.crm-topbar .crm-top-actions .font-brand + span { color: #58d9f3; }
+.production-intro { text-align: left; }
