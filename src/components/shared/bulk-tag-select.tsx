@@ -10,8 +10,9 @@ import {
 } from "@/components/ui/select";
 import { trpc } from "@/lib/trpc/client";
 import { toast } from "sonner";
+import type { EntityType } from "@/lib/entity-types";
 
-type TaggableEntityType = "CONTACT" | "COMPANY" | "DEAL" | "LEAD" | "ACCOUNT";
+type TaggableEntityType = EntityType;
 
 export function BulkTagSelect({
   entityType,

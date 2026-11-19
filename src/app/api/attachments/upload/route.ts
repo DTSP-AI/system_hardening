@@ -13,11 +13,12 @@ import { requireAppUserForRoute } from "@/lib/auth/app-user";
 import { prisma } from "@/lib/db";
 import { MAX_UPLOAD_BYTES, UPLOAD_LIMITS } from "@/lib/abuse-limits";
 import { consumeRateLimit } from "@/lib/rate-limit";
-import { validateUpload } from "@/lib/attachments/file-policy";
+import { attachmentPathPrefix, validateUpload } from "@/lib/attachments/file-policy";
+import { ENTITY_TYPES } from "@/lib/entity-types";
 import { entityExists } from "@/lib/attachments/entity";
 
 const fieldsSchema = z.object({
-  entityType: z.enum(["CONTACT", "COMPANY", "DEAL", "LEAD", "ACCOUNT"]),
+  entityType: z.enum(ENTITY_TYPES),
   entityId: z.string().min(1).max(64),
 });
 
@@ -92,7 +93,7 @@ export async function POST(req: Request) {
   }
 
   const key =
-    "attachments/" + entityType.toLowerCase() + "/" + entityId + "/" + crypto.randomUUID() + "." + v.ext;
+    attachmentPathPrefix(entityType, entityId) + crypto.randomUUID() + "." + v.ext;
 
   try {
     const blob = await put(key, file, {

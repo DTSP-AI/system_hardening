@@ -9,13 +9,13 @@ import { entityExists } from "@/lib/attachments/entity";
 import {
   ALLOWED,
   ATTACHMENT_PATH_RE,
+  attachmentPathPrefix,
   getExtension,
   isAllowedExt,
   sanitizeFileName,
 } from "@/lib/attachments/file-policy";
+import { ENTITY_TYPES } from "@/lib/entity-types";
 import { createTRPCRouter, authedProcedure } from "@/server/api/trpc";
-
-const ENTITY_TYPES = ["CONTACT", "COMPANY", "DEAL", "LEAD", "ACCOUNT"] as const;
 
 export const attachmentRouter = createTRPCRouter({
   forEntity: authedProcedure
@@ -37,7 +37,7 @@ export const attachmentRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const prefix = `attachments/${input.entityType.toLowerCase()}/${input.entityId}/`;
+      const prefix = attachmentPathPrefix(input.entityType, input.entityId);
       if (!input.blobPathname.startsWith(prefix)) {
         throw new TRPCError({ code: "BAD_REQUEST", message: "Upload does not match this record" });
       }

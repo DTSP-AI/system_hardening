@@ -8,10 +8,10 @@ import { trpc } from "@/lib/trpc/client";
 import { Button } from "@/components/ui/button";
 import { MAX_UPLOAD_BYTES } from "@/lib/abuse-limits";
 import { useCurrentRole } from "@/lib/hooks/use-current-role";
+import type { EntityType } from "@/lib/entity-types";
 
 const ACCEPT = ".pdf,.png,.jpg,.jpeg,.docx,.xlsx,.csv,.txt";
-const ENTITY_TYPES = ["CONTACT", "COMPANY", "DEAL", "LEAD", "ACCOUNT"] as const;
-export type AttachmentEntityType = (typeof ENTITY_TYPES)[number];
+export type AttachmentEntityType = EntityType;
 
 function formatBytes(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
