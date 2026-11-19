@@ -1,8 +1,7 @@
-import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { zId, zName, zShort, zEmail, zPhone, zIdArray, zImportRows } from "@/lib/validation";
 import { createTRPCRouter, authedProcedure, adminProcedure } from "@/server/api/trpc";
-import { notify } from "@/lib/notify";
+import { convertLead, setLeadStatus } from "@/server/services/lead-convert";
 import { logAudit, toJsonSafe } from "@/lib/audit";
 
 const leadInput = z.object({
@@ -72,20 +71,9 @@ export const leadRouter = createTRPCRouter({
 
   setStatus: authedProcedure
     .input(z.object({ id: zId, status: z.enum(LEAD_STATUSES) }))
-    .mutation(async ({ ctx, input }) => {
-      const updated = await ctx.db.lead.update({
-        where: { id: input.id },
-        data: { status: input.status },
-      });
-      await logAudit(ctx.db, {
-        actorId: ctx.userId,
-        entityType: "LEAD",
-        entityId: input.id,
-        action: "UPDATE",
-        diff: { status: input.status },
-      });
-      return updated;
-    }),
+    .mutation(({ ctx, input }) =>
+      setLeadStatus(ctx.db, { actorId: ctx.userId, leadId: input.id, status: input.status }),
+    ),
 
   delete: adminProcedure
     .input(z.object({ id: zId }))
@@ -128,65 +116,5 @@ export const leadRouter = createTRPCRouter({
 
   convert: authedProcedure
     .input(z.object({ id: zId }))
-    .mutation(async ({ ctx, input }) => {
-      const lead = await ctx.db.lead.findUniqueOrThrow({ where: { id: input.id } });
-
-      let companyId: string | undefined;
-      if (lead.companyName) {
-        const existing = await ctx.db.company.findFirst({ where: { name: lead.companyName } });
-        companyId = existing
-          ? existing.id
-          : (
-              await ctx.db.company.create({
-                data: { name: lead.companyName },
-              })
-            ).id;
-      }
-
-      const contact = await ctx.db.contact.create({
-        data: {
-          firstName: lead.firstName,
-          lastName: lead.lastName,
-          email: lead.email,
-          phone: lead.phone,
-          jobTitle: lead.jobTitle,
-          leadSource: lead.source,
-          companyId,
-        },
-      });
-
-      const firstStage = await ctx.db.pipelineStage.findFirst({
-        where: { isWon: false, isLost: false },
-        orderBy: { sortOrder: "asc" },
-      });
-      if (!firstStage) {
-        throw new TRPCError({ code: "PRECONDITION_FAILED", message: "No open pipeline stage exists to create the deal in" });
-      }
-      const deal = await ctx.db.deal.create({
-        data: {
-          name: lead.companyName ?? `${lead.firstName} ${lead.lastName}`,
-          contactId: contact.id,
-          companyId,
-          stageId: firstStage.id,
-          source: lead.source,
-          ownerId: lead.ownerId,
-        },
-      });
-
-      await ctx.db.lead.update({
-        where: { id: lead.id },
-        data: { status: "CONVERTED", convertedContactId: contact.id, convertedDealId: deal.id },
-      });
-
-      if (lead.ownerId && lead.ownerId !== ctx.userId) {
-        await notify(ctx.db, {
-          userId: lead.ownerId,
-          type: "LEAD_CONVERTED",
-          title: `${lead.firstName} ${lead.lastName} converted to a deal`,
-          linkHref: `/deals/${deal.id}`,
-        });
-      }
-
-      return { contact, deal };
-    }),
+    .mutation(({ ctx, input }) => convertLead(ctx.db, { actorId: ctx.userId, leadId: input.id })),
 });

@@ -3,10 +3,10 @@
 # Hand-written intent lives in CLAUDE.md frontmatter; this file records what is on disk.
 schema: contract-graph/1
 project: bos1
-inputs_hash: eba65c0422f74472e5b5ffd9a73d43d343b0498311ee1882d27c53bf0fab3e7f
+inputs_hash: f80b22b833faf723e0890f835694b08f3aa2fb1da2f27faf2c2c7c3e29a209f4
 counts:
   contracts: 6
-  source_files: 161
+  source_files: 163
   modules: 4
   problems: 0
   advisories: 0
@@ -119,7 +119,7 @@ modules:
 - path: src
   languages:
   - typescript
-  files: 142
+  files: 143
   imports: []
   external:
   - '@/components'
@@ -156,7 +156,7 @@ modules:
 - path: tests
   languages:
   - typescript
-  files: 11
+  files: 12
   imports:
   - src
   external:
@@ -318,6 +318,7 @@ files:
 - path: src/server/api/routers/todo.ts
 - path: src/server/api/trpc.ts
 - path: src/server/services/deal-stage.ts
+- path: src/server/services/lead-convert.ts
 - path: tests/csv.test.ts
   imports:
   - src/lib/csv.ts
@@ -337,6 +338,10 @@ files:
   - tests/helpers/db.ts
 - path: tests/server/harness.test.ts
   imports:
+  - tests/helpers/db.ts
+- path: tests/server/lead-convert.test.ts
+  imports:
+  - tests/helpers/caller.ts
   - tests/helpers/db.ts
 - path: tests/test-db-url.test.ts
   imports:
