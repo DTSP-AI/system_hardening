@@ -894,7 +894,7 @@
 .crm-topbar-overview { border-bottom: 0; }
 
 /* One shared field keeps the circuit lines continuous across the sidebar and header. */
-.crm-shell:has(.crm-topbar-overview) {
+.crm-shell {
   isolation: isolate;
   background-color: #02060d;
   background-image:
@@ -908,9 +908,29 @@
   background-position: center, center, center, 40% -130px, 78% 120px, center;
   background-repeat: no-repeat;
 }
-.crm-shell:has(.crm-topbar-overview) > .app-backdrop { display: none; }
-.crm-shell:has(.crm-topbar-overview) .crm-sidebar,
-.crm-shell:has(.crm-topbar-overview) .crm-topbar-overview { background: transparent; border: 0; }
+.crm-shell > .app-backdrop { display: none; }
+.crm-shell .crm-sidebar,
+.crm-shell .crm-topbar:not(.crm-topbar-production) { background: transparent; border: 0; }
 @media (max-width: 760px) {
-  .crm-shell:has(.crm-topbar-overview) .crm-sidebar { background: #06111e; }
+  .crm-shell .crm-sidebar { background: #06111e; }
 }
+
+/* Restore the sidebar's extra circuit detail below the shared header seam. */
+@media (min-width: 761px) {
+  .crm-shell .crm-sidebar { position: relative; }
+}
+.crm-shell .crm-sidebar::before {
+  content: '';
+  position: absolute;
+  inset: 68px 0 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(135deg, transparent 49.8%, rgba(7, 135, 255, .22) 50%, transparent 50.4%),
+    linear-gradient(45deg, transparent 49.8%, rgba(7, 135, 255, .15) 50%, transparent 50.4%);
+  background-size: 300px 260px, 360px 340px;
+  background-position: 15% 30%, 80% 70%;
+  background-repeat: no-repeat;
+  mask-image: linear-gradient(180deg, transparent, #000 90px);
+  -webkit-mask-image: linear-gradient(180deg, transparent, #000 90px);
+}
+.crm-shell .crm-sidebar > * { position: relative; }
