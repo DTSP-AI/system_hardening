@@ -195,20 +195,20 @@ export default function DealDetailPage({ params }: { params: Promise<{ id: strin
               }
             />
             <CustomFieldsDisplay entityType="DEAL" values={deal.data.customFields} />
-            <TagPicker entityType="DEAL" entityId={id} />
             {deal.data.account ? (
-              <Button asChild variant="outline" className="mt-3 w-full">
+              <Button asChild variant="outline" className="mb-3 w-full">
                 <Link href={`/accounts/${deal.data.account.id}`}>View account</Link>
               </Button>
             ) : deal.data.status === "WON" ? (
               <Button
-                className="mt-3 w-full"
+                className="mb-3 w-full"
                 onClick={() => convertToAccount.mutate({ id })}
                 disabled={convertToAccount.isPending}
               >
                 Convert to account
               </Button>
             ) : null}
+            <TagPicker entityType="DEAL" entityId={id} />
           </div>
         </>
       }

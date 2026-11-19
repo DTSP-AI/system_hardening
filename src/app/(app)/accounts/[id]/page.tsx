@@ -2,6 +2,8 @@
 
 import { use } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
 import { trpc } from "@/lib/trpc/client";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -34,6 +36,7 @@ function Field({ label, value }: { label: string; value: React.ReactNode }) {
 
 export default function AccountDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
+  const router = useRouter();
   const utils = trpc.useUtils();
   const account = trpc.account.byId.useQuery({ id });
 
@@ -138,6 +141,24 @@ export default function AccountDetailPage({ params }: { params: Promise<{ id: st
                 )
               }
             />
+            {a.status === "CHURNED" && a.contact ? (
+              <Button asChild variant="outline" className="mb-3 w-full">
+                <Link href={`/contacts/${a.contact.id}`}>View contact</Link>
+              </Button>
+            ) : (
+              <Button
+                className="mb-3 w-full"
+                disabled={updateAccount.isPending || !a.contact}
+                onClick={() =>
+                  updateAccount.mutate(
+                    { id, status: "CHURNED" },
+                    { onSuccess: () => a.contact && router.push(`/contacts/${a.contact.id}`) },
+                  )
+                }
+              >
+                Archive to Contacts
+              </Button>
+            )}
             <TagPicker entityType="ACCOUNT" entityId={id} />
           </div>
         </>
