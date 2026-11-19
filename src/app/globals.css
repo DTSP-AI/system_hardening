@@ -1000,3 +1000,11 @@
 .crm-topbar .crm-top-actions .font-brand + span { color: #58d9f3; }
 .production-intro { text-align: left; }
 .crm-topbar .crm-top-actions .font-brand { color: #fff; }
+
+/* Center the sidebar brand lockup and balance the wordmark with its subtitle. */
+.crm-sidebar-brand { position: relative; justify-content: center; text-align: center; }
+.crm-sidebar-wordmark { font-size: 40px; letter-spacing: .06em; }
+.crm-sidebar-brand .crm-sidebar-wordmark small { justify-content: center; }
+@media (max-width: 760px) {
+  .crm-sidebar-brand .crm-close { position: absolute; top: 12px; right: 10px; margin: 0; }
+}
