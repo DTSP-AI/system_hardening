@@ -3,10 +3,10 @@
 # Hand-written intent lives in CLAUDE.md frontmatter; this file records what is on disk.
 schema: contract-graph/1
 project: bos1
-inputs_hash: d33c45de16b36ffa9a77a1698981028d79c672abc3d69863bb2fc9f162259d73
+inputs_hash: e482c9307235d5dbafd21e98aef44560199590c528d4ce55a09bfc5bfec502f6
 counts:
-  contracts: 6
-  source_files: 171
+  contracts: 7
+  source_files: 178
   modules: 4
   problems: 0
   advisories: 0
@@ -19,11 +19,13 @@ declared:
   planned:
   - node: cli
     path: scripts/bos1-cli.ts
-  - node: mcp_route
-    path: src/app/api/mcp
   declared_not_observed:
   - - attachment_routes
     - user_auth
+  - - mcp_route
+    - machine_auth
+  - - mcp_route
+    - services
   - - routers
     - db
   - - routers
@@ -77,6 +79,10 @@ contracts:
 - path: README.md
   kind: readme
   graph: false
+- path: bos1.mcp.md
+  kind: doc
+  version: 1.0.0
+  graph: true
 - path: docs/hardening/ARCHITECTURE.md
   kind: architecture
   status: active
@@ -117,7 +123,7 @@ modules:
 - path: src
   languages:
   - typescript
-  files: 148
+  files: 152
   imports: []
   external:
   - '@/components'
@@ -126,6 +132,7 @@ modules:
   - '@clerk/nextjs'
   - '@dnd-kit/core'
   - '@generated/prisma'
+  - '@modelcontextprotocol/server'
   - '@neondatabase/serverless'
   - '@prisma/adapter-neon'
   - '@tanstack/react-query'
@@ -139,6 +146,7 @@ modules:
   - cmdk
   - crypto
   - lucide-react
+  - mcp-handler
   - next
   - next-themes
   - radix-ui
@@ -154,10 +162,11 @@ modules:
 - path: tests
   languages:
   - typescript
-  files: 15
+  files: 18
   imports:
   - src
   external:
+  - '@/app'
   - '@/lib'
   - '@/server'
   - '@prisma/adapter-pg'
@@ -193,6 +202,7 @@ files:
 - path: src/app/(app)/prospecting/page.tsx
 - path: src/app/api/attachments/[id]/download/route.ts
 - path: src/app/api/attachments/upload/route.ts
+- path: src/app/api/mcp/route.ts
 - path: src/app/api/trpc/[trpc]/route.ts
 - path: src/app/api/twilio/recording/[sid]/route.ts
 - path: src/app/api/twilio/token/route.ts
@@ -275,6 +285,7 @@ files:
 - path: src/lib/auth/api-key-scopes.ts
 - path: src/lib/auth/api-key.ts
 - path: src/lib/auth/app-user.ts
+- path: src/lib/auth/public-routes.ts
 - path: src/lib/csv.ts
 - path: src/lib/db.ts
 - path: src/lib/email.ts
@@ -318,7 +329,9 @@ files:
 - path: src/server/api/routers/tag.ts
 - path: src/server/api/routers/todo.ts
 - path: src/server/api/trpc.ts
+- path: src/server/mcp/envelope.ts
 - path: src/server/services/attachments.ts
+- path: src/server/services/crm-read.ts
 - path: src/server/services/deal-stage.ts
 - path: src/server/services/email-send.ts
 - path: src/server/services/lead-convert.ts
@@ -333,10 +346,14 @@ files:
 - path: tests/helpers/db.ts
   imports:
   - tests/helpers/test-db-url.ts
+- path: tests/helpers/mcp.ts
+  imports:
+  - tests/helpers/db.ts
 - path: tests/helpers/test-db-url.ts
 - path: tests/helpers/tx-spy.ts
   imports:
   - tests/helpers/db.ts
+- path: tests/public-routes.test.ts
 - path: tests/rate-limit.test.ts
 - path: tests/server/api-key.test.ts
   imports:
@@ -353,6 +370,10 @@ files:
   imports:
   - tests/helpers/caller.ts
   - tests/helpers/db.ts
+- path: tests/server/mcp-read.test.ts
+  imports:
+  - tests/helpers/db.ts
+  - tests/helpers/mcp.ts
 - path: tests/server/transactions.test.ts
   imports:
   - tests/helpers/caller.ts
