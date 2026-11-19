@@ -869,3 +869,7 @@
 .crm-header-greeting span { font-size: clamp(20px, 2vw, 27px); }
 @media (min-width: 901px) { .crm-topbar-overview .crm-search { transform: translateX(-24px); } }
 @media (max-width: 600px) { .crm-header-greeting span { font-size: 18px; } }
+
+@media (min-width: 901px) {
+  .crm-topbar-overview { grid-template-columns: minmax(180px, 1fr) minmax(220px, 420px) minmax(220px, 1fr); }
+}
