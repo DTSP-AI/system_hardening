@@ -944,3 +944,39 @@
   background-position: 0 45px, 40px 155px;
   background-repeat: repeat-y;
 }
+
+/* One repeating circuit field aligns lines across the navigation and every header. */
+.crm-shell {
+  background-image:
+    radial-gradient(circle at 8% 15%, rgba(202, 229, 255, .48) 0 .8px, transparent 1.6px),
+    radial-gradient(circle at 45% 7%, rgba(166, 209, 255, .4) 0 .8px, transparent 1.6px),
+    radial-gradient(circle at 82% 12%, rgba(202, 229, 255, .32) 0 .8px, transparent 1.6px),
+    linear-gradient(135deg, transparent 49.7%, rgba(7, 155, 230, .37) 50%, transparent 50.3%),
+    linear-gradient(45deg, transparent 49.7%, rgba(7, 135, 225, .23) 50%, transparent 50.3%),
+    radial-gradient(ellipse at 72% 20%, #0a1829 0%, #030810 55%, #010308 100%);
+  background-size: auto, auto, auto, 300px 260px, 360px 340px, auto;
+  background-position: center, center, center, 0 0, 0 0, center;
+  background-repeat: no-repeat, no-repeat, no-repeat, repeat, repeat, no-repeat;
+}
+.crm-shell .crm-sidebar::before { display: none; }
+.crm-shell .crm-topbar-production {
+  --foreground: #eaf5fc;
+  --muted-foreground: #a5bfd0;
+  position: relative; top: auto; right: auto; z-index: auto;
+  height: 68px; padding: 0 26px; gap: 16px;
+  color: var(--foreground); background: transparent; border: 0;
+}
+.crm-topbar-production .crm-search { width: min(580px, 70%); height: 42px; flex: initial; justify-content: flex-start; padding: 0 14px; background: rgba(255, 255, 255, .055); color: #b9cedd; border-color: rgba(151, 198, 223, .22); }
+.crm-topbar-production .crm-search span, .crm-topbar-production .crm-search kbd { display: initial; }
+.crm-topbar-production [data-variant="ghost"], .dark .crm-topbar-production [data-variant="ghost"] { color: #dcecf6; }
+.crm-topbar-production [data-variant="ghost"]:hover { color: #fff; background: rgba(91, 202, 237, .16); }
+.crm-main-production { padding-top: 26px; }
+.production-dashboard .dashboard-welcome { padding-right: 0; min-height: 0; }
+@media (max-width: 900px) {
+  .crm-shell .crm-topbar-production { padding: 0 18px; }
+}
+@media (max-width: 760px) {
+  .crm-topbar-production .crm-search { width: auto; flex: 1; }
+  .crm-topbar-production .crm-search kbd { display: none; }
+  .crm-main-production { padding-top: 18px; }
+}
