@@ -10,11 +10,14 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "tsx --test tests/*.test.ts",
+    "test": "npm run test:unit && npm run test:server",
     "user:add": "tsx scripts/add-user.ts",
     "seed:demo": "tsx scripts/seed-demo.ts",
     "seed:priorities": "tsx scripts/seed-priorities.ts",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "typecheck": "tsc --noEmit",
+    "test:unit": "tsx --test tests/*.test.ts",
+    "test:server": "tsx scripts/test-db.ts && tsx --test --test-concurrency=1 tests/server/*.test.ts"
   },
   "dependencies": {
     "@clerk/nextjs": "^7.5.17",
@@ -53,6 +56,7 @@
     "zustand": "^5.0.14"
   },
   "devDependencies": {
+    "@prisma/adapter-pg": "^7.8.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
@@ -66,5 +70,10 @@
     "tailwindcss": "^4",
     "tsx": "4.23.15",
     "typescript": "^5"
+  },
+  "overrides": {
+    "@vercel/cli-config": {
+      "zod": "$zod"
+    }
   }
 }

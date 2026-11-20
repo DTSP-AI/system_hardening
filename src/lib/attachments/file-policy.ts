@@ -1,4 +1,5 @@
 import { MAX_UPLOAD_BYTES } from "@/lib/abuse-limits";
+import { ENTITY_TYPES, type EntityType } from "@/lib/entity-types";
 
 type Check = { kind: "magic"; bytes: readonly number[] } | { kind: "text" };
 
@@ -28,8 +29,19 @@ export const ALLOWED = {
 
 export type AllowedExt = keyof typeof ALLOWED;
 
-export const ATTACHMENT_PATH_RE =
-  /^attachments\/(contact|company|deal|lead)\/[A-Za-z0-9_-]{1,64}\/[0-9a-f-]{36}\.(pdf|png|jpg|jpeg|docx|xlsx|csv|txt)$/;
+/** The folder an entity's attachments are stored under. The upload route and the router both use it. */
+export function attachmentPathPrefix(entityType: EntityType, entityId: string): string {
+  return `attachments/${entityType.toLowerCase()}/${entityId}/`;
+}
+
+/** Built from ENTITY_TYPES and ALLOWED so a new entity type or extension cannot be forgotten here. */
+export const ATTACHMENT_PATH_RE = new RegExp(
+  "^attachments/(" +
+    ENTITY_TYPES.map((t) => t.toLowerCase()).join("|") +
+    ")/[A-Za-z0-9_-]{1,64}/[0-9a-f-]{36}\\.(" +
+    Object.keys(ALLOWED).join("|") +
+    ")$",
+);
 
 export function isAllowedExt(ext: string): ext is AllowedExt {
   return Object.prototype.hasOwnProperty.call(ALLOWED, ext);

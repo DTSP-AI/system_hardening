@@ -1,21 +1,9 @@
-import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { del, head, BlobNotFoundError } from "@vercel/blob";
-import { Prisma } from "@generated/prisma/client";
-import { logAudit, toJsonSafe } from "@/lib/audit";
 import { zId } from "@/lib/validation";
-import { MAX_UPLOAD_BYTES } from "@/lib/abuse-limits";
-import { entityExists } from "@/lib/attachments/entity";
-import {
-  ALLOWED,
-  ATTACHMENT_PATH_RE,
-  getExtension,
-  isAllowedExt,
-  sanitizeFileName,
-} from "@/lib/attachments/file-policy";
-import { createTRPCRouter, authedProcedure } from "@/server/api/trpc";
-
-const ENTITY_TYPES = ["CONTACT", "COMPANY", "DEAL", "LEAD", "ACCOUNT"] as const;
+import { ATTACHMENT_PATH_RE } from "@/lib/attachments/file-policy";
+import { ENTITY_TYPES } from "@/lib/entity-types";
+import { createTRPCRouter, authedProcedure, authedProcedureNoTx } from "@/server/api/trpc";
+import { createAttachment, deleteAttachment } from "@/server/services/attachments";
 
 export const attachmentRouter = createTRPCRouter({
   forEntity: authedProcedure
@@ -27,7 +15,8 @@ export const attachmentRouter = createTRPCRouter({
       }),
     ),
 
-  create: authedProcedure
+  // No transaction on create and delete: both call storage (see services/attachments.ts).
+  create: authedProcedureNoTx
     .input(
       z.object({
         entityType: z.enum(ENTITY_TYPES),
@@ -36,95 +25,11 @@ export const attachmentRouter = createTRPCRouter({
         blobPathname: z.string().max(200).regex(ATTACHMENT_PATH_RE),
       }),
     )
-    .mutation(async ({ ctx, input }) => {
-      const prefix = `attachments/${input.entityType.toLowerCase()}/${input.entityId}/`;
-      if (!input.blobPathname.startsWith(prefix)) {
-        throw new TRPCError({ code: "BAD_REQUEST", message: "Upload does not match this record" });
-      }
+    .mutation(({ ctx, input }) => createAttachment(ctx.prisma, { actorId: ctx.userId, ...input })),
 
-      if (!(await entityExists(ctx.db, input.entityType, input.entityId))) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "Record not found" });
-      }
-
-      let meta;
-      try {
-        meta = await head(input.blobPathname);
-      } catch (err) {
-        if (err instanceof BlobNotFoundError) {
-          throw new TRPCError({ code: "BAD_REQUEST", message: "Upload not found" });
-        }
-        console.error("attachment.create: head failed", err);
-        throw new TRPCError({ code: "SERVICE_UNAVAILABLE", message: "Storage unavailable" });
-      }
-      if (meta.size > MAX_UPLOAD_BYTES) {
-        throw new TRPCError({ code: "BAD_REQUEST", message: "File too large" });
-      }
-
-      const ext = getExtension(input.blobPathname);
-      if (!isAllowedExt(ext)) {
-        throw new TRPCError({ code: "BAD_REQUEST", message: "File type not allowed" });
-      }
-      const fileName = sanitizeFileName(input.fileName);
-      if (!fileName) {
-        throw new TRPCError({ code: "BAD_REQUEST", message: "Invalid file name" });
-      }
-
-      try {
-        const created = await ctx.db.attachment.create({
-          data: {
-            entityType: input.entityType,
-            entityId: input.entityId,
-            fileName,
-            blobPathname: input.blobPathname,
-            fileSize: meta.size,
-            mimeType: ALLOWED[ext].contentType,
-            uploadedById: ctx.userId,
-          },
-        });
-        await logAudit(ctx.db, {
-          actorId: ctx.userId,
-          entityType: "ATTACHMENT",
-          entityId: created.id,
-          action: "CREATE",
-          diff: toJsonSafe(created),
-        });
-        return created;
-      } catch (err) {
-        if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
-          throw new TRPCError({ code: "CONFLICT", message: "File already attached" });
-        }
-        throw err;
-      }
-    }),
-
-  delete: authedProcedure
+  delete: authedProcedureNoTx
     .input(z.object({ id: zId }))
-    .mutation(async ({ ctx, input }) => {
-      const attachment = await ctx.db.attachment.findUniqueOrThrow({ where: { id: input.id } });
-      if (
-        attachment.uploadedById !== ctx.userId &&
-        ctx.user.role !== "OWNER" &&
-        ctx.user.role !== "ADMIN"
-      ) {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "You don't have permission to do this.",
-        });
-      }
-      const deleted = await ctx.db.attachment.delete({ where: { id: input.id } });
-      await logAudit(ctx.db, {
-        actorId: ctx.userId,
-        entityType: "ATTACHMENT",
-        entityId: input.id,
-        action: "DELETE",
-        diff: toJsonSafe(deleted),
-      });
-      // DB row first: worst case is an inaccessible orphan blob, never a dangling row.
-      try {
-        await del(attachment.blobPathname);
-      } catch (err) {
-        console.error("attachment.delete: blob delete failed", attachment.blobPathname, err);
-      }
-      return deleted;
-    }),
+    .mutation(({ ctx, input }) =>
+      deleteAttachment(ctx.prisma, { actorId: ctx.userId, actorRole: ctx.user.role, id: input.id }),
+    ),
 });

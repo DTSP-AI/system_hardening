@@ -45,8 +45,10 @@ function LeadCard({ lead }: { lead: Lead }) {
     id: lead.id,
     disabled: locked,
   });
+  // Read the clock once per mount: calling Date.now() during render is impure.
+  const [mountedAt] = useState(() => Date.now());
   const isStale =
-    !locked && Date.now() - new Date(lead.updatedAt).getTime() > STALE_MS;
+    !locked && mountedAt - new Date(lead.updatedAt).getTime() > STALE_MS;
 
   return (
     <div
