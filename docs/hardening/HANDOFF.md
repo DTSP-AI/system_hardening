@@ -8,8 +8,10 @@ relationships:
 
 # Handoff
 
-Written 2026-11-19. State: built, reviewed, pushed, waiting for Josh Phelps's approval.
-Nothing is merged into `main`, nothing is deployed, no shared database was touched.
+Written 2026-11-19, updated 2026-11-20. State: built, reviewed and merged into `main` of the fork
+DTSP-AI/system_hardening (merge commit `f74ff5e`, tag `known-good-2026-11-20-be1dd91`). Nothing has
+gone to the upstream YBRYX/BOS1, which is still at `f62bf05`. Nothing is deployed and no shared
+database was touched.
 
 ## What was built
 
@@ -82,7 +84,8 @@ All reversible. From `forge.py decisions`:
 
 Waiting on people:
 
-1. Josh reviews and merges pull request 1, then pull request 2.
+1. Pull requests 1 and 2 are merged in the fork. Getting this work into the upstream YBRYX/BOS1 is a
+   pull request that Pete or Josh opens and Josh approves; a session does not open it.
 2. Someone with access applies the migration to the production database (see RELEASE.md). Who
    does that, and how, is not established.
 3. The repository is public. Whether it should be is the owner's call.
@@ -101,4 +104,5 @@ Everything else is in docs/HEADLESS_PLAN.md.
 
 ## Smallest next step
 
-Josh opens https://github.com/DTSP-AI/system_hardening/pull/1 and reviews it.
+Create the fork's own Neon database, apply the four migrations to it, and run the app against it
+(this also needs Clerk keys).

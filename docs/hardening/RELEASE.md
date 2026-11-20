@@ -15,7 +15,7 @@ Nothing in this record is deployed. It names what a deployment of this work cons
 - Base: `f62bf05` (main of DTSP-AI/system_hardening and YBRYX/BOS1 on 2026-11-19).
 - Pull request 1, branch `hardening/red-fixes`, head `c2574d6`: the five audited defects, the checks and CI.
 - Pull request 2, branch `active-dev`: scoped API keys, the MCP endpoint, the CLI, the review fixes, these documents.
-- Both wait for Josh Phelps's approval. Neither is merged.
+- Both were merged into `main` of the fork on 2026-11-20 (merge commit `f74ff5e`). Neither has gone to the upstream YBRYX/BOS1; that needs Josh Phelps's approval.
 
 ## Migrations
 
