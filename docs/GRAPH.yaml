@@ -3,10 +3,10 @@
 # Hand-written intent lives in CLAUDE.md frontmatter; this file records what is on disk.
 schema: contract-graph/1
 project: bos1
-inputs_hash: 54d7d1a65c0a28a4c3afbd0dbe5dcf61d838dc15110748801fc67c1867325eba
+inputs_hash: 8e3684b3dec4c00142caf086000427f8c2a471ddc788e24fb0388638f1219f7f
 counts:
   contracts: 11
-  source_files: 186
+  source_files: 187
   modules: 4
   problems: 0
   advisories: 0
@@ -193,7 +193,7 @@ modules:
 - path: tests
   languages:
   - typescript
-  files: 21
+  files: 22
   imports:
   - scripts
   - src
@@ -378,6 +378,7 @@ files:
   imports:
   - src/lib/csv.ts
 - path: tests/dial-policy.test.ts
+- path: tests/email-outcome.test.ts
 - path: tests/file-policy.test.ts
 - path: tests/helpers/caller.ts
   imports:

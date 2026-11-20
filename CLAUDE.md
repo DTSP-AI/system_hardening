@@ -30,10 +30,9 @@ upstream: https://github.com/YBRYX/BOS1
 branches:
   work: active-dev
   release: main
-  release_merge: josh
-  rule: Work on active-dev, pull request into main of DTSP-AI/system_hardening. Josh Phelps approves every pull request
-    before it is merged into main; a session opens the pull request and never merges it. Nothing is pushed to the
-    upstream YBRYX/BOS1.
+  rule: Work on active-dev, pull request into main of the fork DTSP-AI/system_hardening, merged by the session once CI
+    passes. Nothing goes past the fork. The upstream YBRYX/BOS1 is read-only from here, with no pushes and no pull
+    requests opened by a session; Josh Phelps approves anything that reaches it.
 stack:
   app: Next.js 16.4 App Router + React 19.2 + TypeScript 5 (strict) + Tailwind v4 + Radix
   api: tRPC 11 + zod 4
@@ -98,9 +97,14 @@ is docs/GRAPH.yaml.
 
 ## Hard rules
 
-- Branches: work on `active-dev`. `main` changes only by pull request in DTSP-AI/system_hardening, and only after
-  Josh Phelps has approved it (Pete, 2026-11-19). A session opens the pull request and stops; it never merges
-  into `main`. Never push to the upstream YBRYX/BOS1.
+- Branches: work on `active-dev`; `main` of the fork DTSP-AI/system_hardening changes only by pull request, which
+  the session merges once CI passes.
+- Nothing goes past the fork (Pete, 2026-11-20). The upstream YBRYX/BOS1 is Josh Phelps's repository: a session never
+  pushes to it, never opens a pull request against it and never merges into it, even though this account has push
+  access there. Josh approves anything that reaches it, and Pete or Josh opens that pull request.
+- Every `gh` command names the fork: `--repo DTSP-AI/system_hardening`. In a fork, `gh` can default to the parent.
+- A new checkout is made safe before any work: `git remote set-url --push upstream no-push://upstream-is-read-only`
+  and `gh repo set-default DTSP-AI/system_hardening`.
 - Checks before any push: `npm run typecheck`, `npm run lint`, `npm test`.
 - Tests never use a shared or production database. Server tests run against the local Docker Postgres.
 - Schema changes are new migration files under prisma/migrations. Committed migrations are never edited.

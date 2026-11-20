@@ -27,6 +27,27 @@ export class EmailProviderError extends Error {
   }
 }
 
+/**
+ * Error names the Resend SDK returns when it never got a usable answer: a
+ * failed fetch, an unparseable reply, or a provider-side failure. Observed in
+ * resend 4.8.0 (fetchRequest returns these instead of throwing). The message
+ * may have been accepted, so none of them is a rejection.
+ */
+const NO_ANSWER_ERROR_NAMES: ReadonlySet<string> = new Set(["application_error", "internal_server_error"]);
+
+/**
+ * What an error object returned by the provider SDK says about delivery. Only
+ * a named error outside the no-answer set is a rejection; anything
+ * unrecognised is "unknown", because calling a sent email "not sent" invites a
+ * duplicate.
+ */
+export function outcomeOfProviderError(error: unknown): EmailOutcome {
+  const name =
+    error && typeof error === "object" && "name" in error ? (error as { name?: unknown }).name : undefined;
+  if (typeof name !== "string" || name.length === 0) return "unknown";
+  return NO_ANSWER_ERROR_NAMES.has(name) ? "unknown" : "rejected";
+}
+
 /** How long to wait for the provider before treating the outcome as unknown. */
 export const EMAIL_SEND_TIMEOUT_MS = 20_000;
 
@@ -72,7 +93,7 @@ export async function sendEmail(input: {
     if (timer) clearTimeout(timer);
   }
   if (result.error) {
-    throw new EmailProviderError(result.error, "rejected");
+    throw new EmailProviderError(result.error, outcomeOfProviderError(result.error));
   }
   return { from: config.from, resendId: result.data?.id };
 }
