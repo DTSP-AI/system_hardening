@@ -1,15 +1,7 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { PUBLIC_ROUTE_PATTERNS } from "@/lib/auth/public-routes";
 
-const isPublicRoute = createRouteMatcher([
-  "/sign-in(.*)",
-  "/sign-up(.*)",
-  // Twilio's own server-to-server callbacks -- no Clerk session present,
-  // authenticated instead via X-Twilio-Signature (readValidatedTwilioForm).
-  "/api/twilio/voice",
-  "/api/twilio/voice/status",
-  "/api/twilio/voice/recording",
-  "/api/twilio/voice/announce",
-]);
+const isPublicRoute = createRouteMatcher([...PUBLIC_ROUTE_PATTERNS]);
 
 export default clerkMiddleware(async (auth, req) => {
   if (isPublicRoute(req)) return;

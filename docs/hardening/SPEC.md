@@ -60,10 +60,10 @@ the web UI.
 - A14: A write tool call repeated with the same idempotency key returns the first result and does not repeat its effect.
 - A15: A write made through MCP appears in the audit log attributed to the API key.
 - A16: MCP `move_deal_stage` and `convert_lead` obey A3 and A6 because they call the same services as the UI.
-- A17: List tools return at most a bounded page and a cursor for the next page.
+- A17: List tools return at most a bounded page and a cursor for the next page. `bos1_list_pipeline_stages` is the exception: it returns the whole stage list, a small admin-defined set, in one reply.
 - A18: `npm run cli` lists leads as JSON against a running instance and exits non-zero on an auth failure.
 - A19: An admin can choose scopes when creating a key; key creation and revocation write audit rows.
-- A20: Every existing tRPC procedure keeps its input and output shape, except `deal.update` losing `stageId`.
+- A20: Every existing tRPC procedure keeps its input and output shape, with three exceptions: `deal.update` loses `stageId`; `apiKey.create` requires `scopes`; `apiKey.revoke` returns `id`, `name` and `revokedAt` instead of the full row, which included the key hash. `apiKey.list` gains `scopes`.
 - A21: docs/HEADLESS_PLAN.md exists and lists the remaining headless work by scope.
 
 ## Constraints

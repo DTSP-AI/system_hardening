@@ -276,6 +276,8 @@ model ApiKey {
   id              String    @id @default(cuid())
   name            String
   hashedKey       String    @unique
+  /// "read" and/or "write". A key with no scopes has no access.
+  scopes          String[]  @default([])
   createdByUserId String
   expiresAt       DateTime?
   revokedAt       DateTime?
@@ -392,6 +394,20 @@ model AuditLog {
 
   @@index([entityType, entityId])
   @@map("audit_logs")
+}
+
+/// The stored result of a write made by an API key, so a repeated request with
+/// the same idempotency key returns the first result instead of acting twice.
+model IdempotencyKey {
+  id        String   @id @default(cuid())
+  principal String
+  tool      String
+  key       String
+  response  Json
+  createdAt DateTime @default(now())
+
+  @@unique([principal, tool, key])
+  @@map("idempotency_keys")
 }
 
 model RateLimitHit {

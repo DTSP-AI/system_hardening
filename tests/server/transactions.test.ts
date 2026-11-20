@@ -78,7 +78,7 @@ test("email send: a provider failure leaves one activity marked failed and sends
         configured: () => true,
         send: async () => {
           calls += 1;
-          throw new EmailProviderError(new Error("timeout"));
+          throw new EmailProviderError(new Error("rejected"), "rejected");
         },
       },
     ),
@@ -201,4 +201,64 @@ test("a member cannot delete another user's attachment", async () => {
     /permission/,
   );
   assert.equal(await testDb.attachment.count(), 1);
+});
+
+test("attachment.create through the router opens no transaction around the storage lookup", async () => {
+  const api = await callerFor(await seedUser());
+  const contact = await contactWithEmail();
+  // No storage token in tests, so the lookup fails; what matters is that no transaction was open for it.
+  await assert.rejects(
+    api.attachment.create({
+      entityType: "CONTACT",
+      entityId: contact.id,
+      fileName: "quote.pdf",
+      blobPathname: BLOB_PATH.replace("CONTACT_ID", contact.id),
+    }),
+  );
+  assert.equal(spy.state.count, 0);
+  assert.equal(await testDb.attachment.count(), 0);
+});
+
+test("email send: an unknown outcome (network error or timeout) is recorded as unconfirmed, not failed", async () => {
+  const user = await seedUser();
+  const contact = await contactWithEmail();
+  await assert.rejects(
+    sendContactEmail(
+      testDb,
+      { actorId: user.clerkUserId!, rateKey: user.id, contactId: contact.id, subject: "Hi", body: "Hello" },
+      {
+        configured: () => true,
+        send: async () => {
+          throw new EmailProviderError(new Error("socket hang up"), "unknown");
+        },
+      },
+    ),
+    /could not be confirmed/,
+  );
+  const rows = await testDb.activity.findMany({ where: { type: "EMAIL" } });
+  assert.equal(rows.length, 1);
+  assert.equal((rows[0].metadata as { status?: string }).status, "unconfirmed");
+});
+
+test("email send: if recording the result fails after the provider accepted, the caller still gets success", async () => {
+  const user = await seedUser();
+  const contact = await contactWithEmail();
+  const activities = testDb.activity as unknown as { update: (...args: unknown[]) => Promise<unknown> };
+  const original = activities.update.bind(testDb.activity);
+  let calls = 0;
+  activities.update = async () => {
+    calls += 1;
+    throw new Error("database went away");
+  };
+  try {
+    const activity = await sendContactEmail(
+      testDb,
+      { actorId: user.clerkUserId!, rateKey: user.id, contactId: contact.id, subject: "Hi", body: "Hello" },
+      { configured: () => true, send: async () => ({ from: "crm@example.test", resendId: "re_9" }) },
+    );
+    assert.equal((activity.metadata as { status?: string }).status, "sent");
+    assert.equal(calls, 1);
+  } finally {
+    activities.update = original;
+  }
 });

@@ -3,10 +3,10 @@
 # Hand-written intent lives in CLAUDE.md frontmatter; this file records what is on disk.
 schema: contract-graph/1
 project: bos1
-inputs_hash: 77f4817309e9639e84db353db8197a4b8e3a565d8cc493efd8682fe16de64c1d
+inputs_hash: 8e3684b3dec4c00142caf086000427f8c2a471ddc788e24fb0388638f1219f7f
 counts:
-  contracts: 6
-  source_files: 168
+  contracts: 11
+  source_files: 187
   modules: 4
   problems: 0
   advisories: 0
@@ -16,16 +16,16 @@ declared:
   source: CLAUDE.md
   state: proposed
   nodes: 16
-  planned:
-  - node: cli
-    path: scripts/bos1-cli.ts
-  - node: machine_auth
-    path: src/lib/auth/api-key.ts
-  - node: mcp_route
-    path: src/app/api/mcp
+  planned: []
   declared_not_observed:
   - - attachment_routes
     - user_auth
+  - - cli
+    - mcp_route
+  - - mcp_route
+    - machine_auth
+  - - mcp_route
+    - services
   - - routers
     - db
   - - routers
@@ -76,15 +76,50 @@ contracts:
   - type: defers_to
     target: ~/.dtsp-engineering/ENGINEERING.md
     external: true
+  referenced_by:
+  - docs/HEADLESS_PLAN.md
 - path: README.md
   kind: readme
   graph: false
+- path: bos1.mcp.md
+  kind: doc
+  version: 1.0.0
+  graph: true
+  referenced_by:
+  - docs/HEADLESS_PLAN.md
+- path: docs/HEADLESS_PLAN.md
+  kind: doc
+  id: bos1-headless-plan
+  version: 1.0.0
+  status: shelved
+  scope: project (this repository)
+  graph: true
+  edges:
+  - type: defers_to
+    target: CLAUDE.md
+  - type: expands
+    target: bos1.mcp.md
+  - type: expands
+    target: docs/hardening/ARCHITECTURE.md
 - path: docs/hardening/ARCHITECTURE.md
   kind: architecture
   status: active
   graph: true
   referenced_by:
   - CLAUDE.md
+  - docs/HEADLESS_PLAN.md
+- path: docs/hardening/HANDOFF.md
+  kind: doc
+  status: active
+  graph: true
+- path: docs/hardening/RELEASE.md
+  kind: doc
+  status: active
+  graph: true
+- path: docs/hardening/REVIEW.md
+  kind: doc
+  status: active
+  graph: true
 - path: docs/hardening/SPEC.md
   kind: doc
   status: active
@@ -107,7 +142,7 @@ modules:
 - path: scripts
   languages:
   - typescript
-  files: 4
+  files: 6
   imports:
   - tests
   external:
@@ -119,7 +154,7 @@ modules:
 - path: src
   languages:
   - typescript
-  files: 146
+  files: 155
   imports: []
   external:
   - '@/components'
@@ -128,6 +163,7 @@ modules:
   - '@clerk/nextjs'
   - '@dnd-kit/core'
   - '@generated/prisma'
+  - '@modelcontextprotocol/server'
   - '@neondatabase/serverless'
   - '@prisma/adapter-neon'
   - '@tanstack/react-query'
@@ -141,6 +177,7 @@ modules:
   - cmdk
   - crypto
   - lucide-react
+  - mcp-handler
   - next
   - next-themes
   - radix-ui
@@ -156,10 +193,12 @@ modules:
 - path: tests
   languages:
   - typescript
-  files: 14
+  files: 22
   imports:
+  - scripts
   - src
   external:
+  - '@/app'
   - '@/lib'
   - '@/server'
   - '@prisma/adapter-pg'
@@ -169,6 +208,10 @@ files:
 - path: postcss.config.mjs
 - path: prisma.config.ts
 - path: scripts/add-user.ts
+- path: scripts/bos1-cli-lib.ts
+- path: scripts/bos1-cli.ts
+  imports:
+  - scripts/bos1-cli-lib.ts
 - path: scripts/seed-demo.ts
 - path: scripts/seed-priorities.ts
 - path: scripts/test-db.ts
@@ -195,6 +238,7 @@ files:
 - path: src/app/(app)/prospecting/page.tsx
 - path: src/app/api/attachments/[id]/download/route.ts
 - path: src/app/api/attachments/upload/route.ts
+- path: src/app/api/mcp/route.ts
 - path: src/app/api/trpc/[trpc]/route.ts
 - path: src/app/api/twilio/recording/[sid]/route.ts
 - path: src/app/api/twilio/token/route.ts
@@ -274,7 +318,10 @@ files:
 - path: src/lib/attachments/entity.ts
 - path: src/lib/attachments/file-policy.ts
 - path: src/lib/audit.ts
+- path: src/lib/auth/api-key-scopes.ts
+- path: src/lib/auth/api-key.ts
 - path: src/lib/auth/app-user.ts
+- path: src/lib/auth/public-routes.ts
 - path: src/lib/csv.ts
 - path: src/lib/db.ts
 - path: src/lib/email.ts
@@ -282,6 +329,7 @@ files:
 - path: src/lib/fonts.ts
 - path: src/lib/hooks/use-current-role.ts
 - path: src/lib/hooks/use-row-selection.ts
+- path: src/lib/json.ts
 - path: src/lib/notify.ts
 - path: src/lib/rate-limit.ts
 - path: src/lib/roles.ts
@@ -318,14 +366,19 @@ files:
 - path: src/server/api/routers/tag.ts
 - path: src/server/api/routers/todo.ts
 - path: src/server/api/trpc.ts
+- path: src/server/mcp/envelope.ts
 - path: src/server/services/attachments.ts
+- path: src/server/services/crm-read.ts
+- path: src/server/services/crm-write.ts
 - path: src/server/services/deal-stage.ts
 - path: src/server/services/email-send.ts
+- path: src/server/services/idempotency.ts
 - path: src/server/services/lead-convert.ts
 - path: tests/csv.test.ts
   imports:
   - src/lib/csv.ts
 - path: tests/dial-policy.test.ts
+- path: tests/email-outcome.test.ts
 - path: tests/file-policy.test.ts
 - path: tests/helpers/caller.ts
   imports:
@@ -333,11 +386,24 @@ files:
 - path: tests/helpers/db.ts
   imports:
   - tests/helpers/test-db-url.ts
+- path: tests/helpers/mcp.ts
+  imports:
+  - tests/helpers/db.ts
 - path: tests/helpers/test-db-url.ts
 - path: tests/helpers/tx-spy.ts
   imports:
   - tests/helpers/db.ts
+- path: tests/public-routes.test.ts
 - path: tests/rate-limit.test.ts
+- path: tests/server/api-key.test.ts
+  imports:
+  - tests/helpers/caller.ts
+  - tests/helpers/db.ts
+- path: tests/server/cli.test.ts
+  imports:
+  - scripts/bos1-cli-lib.ts
+  - tests/helpers/db.ts
+  - tests/helpers/mcp.ts
 - path: tests/server/deal-stage.test.ts
   imports:
   - tests/helpers/caller.ts
@@ -345,10 +411,23 @@ files:
 - path: tests/server/harness.test.ts
   imports:
   - tests/helpers/db.ts
+- path: tests/server/isolation.test.ts
+  imports:
+  - tests/helpers/caller.ts
+  - tests/helpers/db.ts
 - path: tests/server/lead-convert.test.ts
   imports:
   - tests/helpers/caller.ts
   - tests/helpers/db.ts
+- path: tests/server/mcp-read.test.ts
+  imports:
+  - tests/helpers/db.ts
+  - tests/helpers/mcp.ts
+- path: tests/server/mcp-write.test.ts
+  imports:
+  - tests/helpers/caller.ts
+  - tests/helpers/db.ts
+  - tests/helpers/mcp.ts
 - path: tests/server/transactions.test.ts
   imports:
   - tests/helpers/caller.ts

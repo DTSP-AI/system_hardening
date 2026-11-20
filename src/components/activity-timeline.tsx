@@ -25,6 +25,8 @@ type CallMetadata = {
   recordingDurationSeconds?: number;
 };
 
+const STALE_SENDING_MS = 2 * 60 * 1000;
+
 type ActivityKind = "NOTE" | "TASK" | "CALL" | "EMAIL" | "MEETING" | "TEXT";
 
 type Activity = {
@@ -211,6 +213,11 @@ function ActivityList({
           activity.type === "EMAIL" && activity.metadata && typeof activity.metadata === "object"
             ? (activity.metadata as { status?: string }).status
             : undefined;
+        // A row still "sending" after two minutes never got its result recorded: treat it as unconfirmed.
+        const emailUnconfirmed =
+          emailStatus === "unconfirmed" ||
+          (emailStatus === "sending" &&
+            new Date().getTime() - new Date(activity.createdAt).getTime() > STALE_SENDING_MS);
         return (
           <div key={activity.id} className="flex gap-3 rounded-md border border-border bg-card p-3">
             <ActivityIcon activity={activity} call={call} />
@@ -227,7 +234,8 @@ function ActivityList({
                   {overdue && <Badge variant="destructive">Overdue</Badge>}
                   {call?.status && <Badge variant="outline">{call.status}</Badge>}
                   {emailStatus === "failed" && <Badge variant="destructive">Not sent</Badge>}
-                  {emailStatus === "sending" && <Badge variant="outline">Sending</Badge>}
+                  {emailUnconfirmed && <Badge variant="destructive">Delivery unconfirmed</Badge>}
+                  {emailStatus === "sending" && !emailUnconfirmed && <Badge variant="outline">Sending</Badge>}
                 </div>
                 <span className="mono-num shrink-0 text-xs text-muted-foreground">
                   {new Date(activity.createdAt).toLocaleString()}
